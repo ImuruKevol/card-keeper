@@ -1,10 +1,10 @@
 {
     "mode": "layout",
     "id": "layout.sidebar",
-    "title": "sidebar",
+    "title": "\uc571 \uc178",
     "namespace": "sidebar",
     "viewuri": "",
     "category": "",
-    "controller": "base",
+    "controller": "user",
     "template": "wiz-layout-sidebar()"
 }

@@ -1,5 +1,14 @@
 {
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "playwright:install": "playwright install chromium",
+    "playwright:install-deps": "playwright install-deps chromium"
+  },
   "dependencies": {
     "@angular/cli": "^21.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
   }
 }

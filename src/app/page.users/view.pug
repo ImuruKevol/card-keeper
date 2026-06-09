@@ -1,0 +1,91 @@
+section(class="page-toolbar")
+    div(class="toolbar-inner")
+        div(class="page-title")
+            span(class="title-icon")
+                svg(xmlns="http://www.w3.org/2000/svg", fill="none", viewBox="0 0 24 24", stroke-width="1.5", stroke="currentColor")
+                    path(stroke-linecap="round", stroke-linejoin="round", d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z")
+            div
+                h1 사용자 관리
+                p 총 {{total}}명
+        div(class="toolbar-actions")
+            label(class="search-field")
+                svg(xmlns="http://www.w3.org/2000/svg", fill="none", viewBox="0 0 24 24", stroke-width="1.5", stroke="currentColor")
+                    path(stroke-linecap="round", stroke-linejoin="round", d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z")
+                input(type="text", [(ngModel)]="search.text", (keyup.enter)="load(1)", placeholder="이름, 이메일, 연락처")
+            select([(ngModel)]="search.role", (change)="load(1)", class="role-filter")
+                option(*ngFor="let role of roles", [value]="role.value") {{role.label}}
+            button(type="button", (click)="load(1)", class="icon-button", title="검색")
+                svg(xmlns="http://www.w3.org/2000/svg", fill="none", viewBox="0 0 24 24", stroke-width="1.5", stroke="currentColor")
+                    path(stroke-linecap="round", stroke-linejoin="round", d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z")
+
+main(class="users-workbench")
+    div(class="status-segments")
+        button(*ngFor="let item of statuses", type="button", (click)="filterStatus(item.value)", class="segment-button", [ngClass]="search.status === item.value ? 'is-active' : ''") {{item.label}}
+
+    section(class="table-shell desktop-only")
+        table(class="data-table")
+            thead
+                tr
+                    th 사용자
+                    th 상태
+                    th 권한
+                    th 가입일
+                    th 마지막 접속
+                    th(class="align-right") 작업
+            tbody
+                tr(*ngIf="loading")
+                    td(colspan="6", class="empty-cell") 로딩 중...
+                tr(*ngIf="!loading && users.length === 0")
+                    td(colspan="6", class="empty-cell") 사용자가 없습니다.
+                tr(*ngFor="let user of users")
+                    td
+                        div(class="identity-cell")
+                            span(class="avatar") {{user.name?.charAt(0) || '?'}}
+                            div(class="min-w-0")
+                                div(class="strong-text") {{user.name}}
+                                div(class="subtext") {{user.email}}
+                                div(class="subtext", *ngIf="user.mobile") {{user.mobile}}
+                    td
+                        span(class="status-pill", [ngClass]="statusClass(user.status)") {{statusLabel(user.status)}}
+                    td
+                        select([(ngModel)]="user.role", (change)="updateRole(user)", [disabled]="roleLocked(user)", [title]="roleLocked(user) ? roleLockMessage(user) : '권한 변경'", class="role-select")
+                            option(value="user") 사용자
+                            option(value="admin") 관리자
+                        div(*ngIf="roleLocked(user)", class="lock-message") {{roleLockMessage(user)}}
+                    td {{user.created ? (user.created | date: 'yyyy-MM-dd') : '-'}}
+                    td {{user.last_access ? (user.last_access | date: 'yyyy-MM-dd HH:mm') : '-'}}
+                    td
+                        div(class="row-actions")
+                            button(*ngIf="user.status === 'pending'", type="button", (click)="approve(user)", class="primary-action compact") 승인
+                            button(*ngIf="user.status === 'blocked'", type="button", (click)="activate(user)", class="secondary-action compact") 활성화
+                            button(*ngIf="user.status !== 'blocked'", type="button", (click)="block(user)", class="danger-action compact") 차단
+
+    section(class="mobile-list")
+        div(*ngIf="loading", class="mobile-empty") 로딩 중...
+        div(*ngIf="!loading && users.length === 0", class="mobile-empty") 사용자가 없습니다.
+        article(*ngFor="let user of users", class="mobile-card")
+            div(class="mobile-card-head")
+                div(class="identity-cell")
+                    span(class="avatar") {{user.name?.charAt(0) || '?'}}
+                    div(class="min-w-0")
+                        h2 {{user.name}}
+                        p {{user.email}}
+                        p(*ngIf="user.mobile") {{user.mobile}}
+                span(class="status-pill", [ngClass]="statusClass(user.status)") {{statusLabel(user.status)}}
+            div(class="mobile-grid")
+                div
+                    small 권한
+                    select([(ngModel)]="user.role", (change)="updateRole(user)", [disabled]="roleLocked(user)", [title]="roleLocked(user) ? roleLockMessage(user) : '권한 변경'", class="role-select")
+                        option(value="user") 사용자
+                        option(value="admin") 관리자
+                    p(*ngIf="roleLocked(user)", class="lock-message") {{roleLockMessage(user)}}
+                div
+                    small 가입일
+                    strong {{user.created ? (user.created | date: 'yyyy-MM-dd') : '-'}}
+                div(class="span-2")
+                    small 마지막 접속
+                    strong {{user.last_access ? (user.last_access | date: 'yyyy-MM-dd HH:mm') : '-'}}
+            div(class="mobile-actions")
+                button(*ngIf="user.status === 'pending'", type="button", (click)="approve(user)", class="primary-action compact") 승인
+                button(*ngIf="user.status === 'blocked'", type="button", (click)="activate(user)", class="secondary-action compact") 활성화
+                button(*ngIf="user.status !== 'blocked'", type="button", (click)="block(user)", class="danger-action compact") 차단

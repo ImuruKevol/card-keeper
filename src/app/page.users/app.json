@@ -1,0 +1,12 @@
+{
+    "id": "page.users",
+    "mode": "page",
+    "title": "/users",
+    "namespace": "users",
+    "category": "admin",
+    "viewuri": "/users",
+    "preview": "",
+    "controller": "admin",
+    "layout": "layout.sidebar",
+    "template": "wiz-page-users()"
+}

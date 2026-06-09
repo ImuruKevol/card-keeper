@@ -5,6 +5,8 @@ node_modules/
 /config/
 /build/
 /test/
+playwright-report/
+test-results/
 package-lock.json
 
 # Byte-compiled / optimized / DLL files

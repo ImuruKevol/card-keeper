@@ -1,31 +1,17 @@
-# =============================================================================
-# 프로젝트 루트 Struct (Composite Struct / Singleton)
-# =============================================================================
-# 호출 예시:
-#   struct = wiz.model("struct")
-#   struct.user.list()                    # 프로젝트 고유 User Sub-Struct
-#   struct.user.authenticate(email, pw)   # 사용자 인증
-#   struct.post.post.search()             # portal/post 패키지 Struct → Post Sub-Struct
-# =============================================================================
-
 class Struct:
     def __init__(self):
         self.orm = wiz.model("portal/season/orm")
         self.session = wiz.model("portal/season/session").use()
-
-        # 프로젝트 고유 Sub-Struct 클래스 로드
         self._User = wiz.model("struct/user")
-
-        # 패키지 Struct 캐시
+        self._BusinessCard = wiz.model("struct/business_card")
+        self._UserSession = wiz.model("struct/user_session")
+        self._AccessLog = wiz.model("struct/access_log")
+        self._AiSetting = wiz.model("struct/ai_setting")
         self._packages = {}
-
-        # 테이블 자동 생성
         self._init_tables()
 
     def _init_tables(self):
-        """DB 테이블이 없으면 자동 생성"""
-        tables = ["user"]
-        for name in tables:
+        for name in ["user", "user_session", "access_log", "business_card", "ai_setting"]:
             try:
                 db = self.orm.use(name)
                 db.orm.create_table(safe=True)
@@ -33,17 +19,36 @@ class Struct:
                 pass
 
     def db(self, name):
-        """ORM Wrapper 반환 (src/model/db/{name}.py)"""
         return self.orm.use(name)
+
+    def getUserId(self):
+        return self.session.get("id", "")
+
+    def isAdmin(self):
+        return self.session.get("role") == "admin"
 
     @property
     def user(self):
-        """User Sub-Struct 접근 (호출마다 새 인스턴스)"""
         return self._User(self)
 
+    @property
+    def card(self):
+        return self._BusinessCard(self)
+
+    @property
+    def user_session(self):
+        return self._UserSession(self)
+
+    @property
+    def access_log(self):
+        return self._AccessLog(self)
+
+    @property
+    def ai_setting(self):
+        return self._AiSetting(self)
+
     def __getattr__(self, name):
-        """알 수 없는 속성 → 패키지 Struct 동적 로드"""
-        if name.startswith('_'):
+        if name.startswith("_"):
             raise AttributeError(name)
         if name not in self._packages:
             try:
@@ -51,5 +56,6 @@ class Struct:
             except Exception:
                 raise AttributeError(f"Package '{name}' not found")
         return self._packages[name]
+
 
 Model = Struct()

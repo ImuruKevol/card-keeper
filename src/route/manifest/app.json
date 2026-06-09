@@ -1,0 +1,8 @@
+{
+    "id": "manifest",
+    "title": "/manifest.json",
+    "route": "/manifest.json",
+    "category": "pwa",
+    "viewuri": "",
+    "controller": ""
+}
