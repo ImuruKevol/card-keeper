@@ -64,3 +64,4 @@
 | 2026-06-09 | 007 | README 현행화 및 문서용 스크린샷·민감 정보 정리 | [상세](devlog/2026-06-09/007-readme-sensitive-assets.md) |
 | 2026-06-09 | 008 | README 목록 스크린샷 더미 데이터 표기 조정 | [상세](devlog/2026-06-09/008-readme-screenshot-dummy-data.md) |
 | 2026-06-09 | 009 | MIT 라이선스 파일 추가 | [상세](devlog/2026-06-09/009-add-mit-license.md) |
+| 2026-06-09 | 010 | README WIZ·AI 개발 표기 및 영어 버전 추가 | [상세](devlog/2026-06-09/010-readme-wiz-ai-english.md) |

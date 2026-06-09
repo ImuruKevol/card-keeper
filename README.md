@@ -1,6 +1,10 @@
 # 명함장
 
-WIZ 프레임워크 기반 개인용 명함 관리 PWA입니다. 사진 촬영/업로드 OCR, CSV/TXT/XLSX 가져오기, CSV/XLSX 내보내기, 관리자 승인 기반 사용자 관리, AI OCR Provider 설정까지 현재 개발 범위에 포함되어 있습니다.
+[English](README.en.md)
+
+[WIZ Framework](https://github.com/season-framework/wiz) 기반 개인용 명함 관리 PWA입니다. 사진 촬영/업로드 OCR, CSV/TXT/XLSX 가져오기, CSV/XLSX 내보내기, 관리자 승인 기반 사용자 관리, AI OCR Provider 설정까지 현재 개발 범위에 포함되어 있습니다.
+
+이 프로젝트는 AI 기반 개발 지원을 활용해 개발되었습니다.
 
 ## 현재 개발 상태
 
@@ -151,3 +155,7 @@ python tests/ocr_business_card_smoke.py
 ```
 
 OCR 이미지 smoke 테스트는 `data/` 아래 실제 샘플 이미지와 Tesseract 런타임이 필요합니다.
+
+## 라이선스
+
+이 프로젝트는 [MIT License](LICENSE)를 따릅니다.
