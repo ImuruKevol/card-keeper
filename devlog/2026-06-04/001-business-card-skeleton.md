@@ -25,7 +25,7 @@ MariaDB 환경 변수 기반 DB 설정을 추가하고, 사용자 승인 기반 
       DB_PORT: '3306'
       DB_NAME: wiz
       DB_USER: wiz
-      DB_PASSWORD: business@2026
+      DB_PASSWORD: <local-secret>
 ```
 
 ## 변경 파일 목록

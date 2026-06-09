@@ -61,3 +61,6 @@
 | 2026-06-09 | 004 | import 메모 병합 구분자 및 기본 활성화 옵션 조정 | [상세](devlog/2026-06-09/004-import-memo-format-default.md) |
 | 2026-06-09 | 005 | import 모바일 툴바와 가져오지 않음 매핑 표시 개선 | [상세](devlog/2026-06-09/005-import-mobile-toolbar-unmapped-state.md) |
 | 2026-06-09 | 006 | 내보내기 포맷 선택 모달 및 모바일 아이콘 툴바 적용 | [상세](devlog/2026-06-09/006-export-format-modal-mobile-toolbar.md) |
+| 2026-06-09 | 007 | README 현행화 및 문서용 스크린샷·민감 정보 정리 | [상세](devlog/2026-06-09/007-readme-sensitive-assets.md) |
+| 2026-06-09 | 008 | README 목록 스크린샷 더미 데이터 표기 조정 | [상세](devlog/2026-06-09/008-readme-screenshot-dummy-data.md) |
+| 2026-06-09 | 009 | MIT 라이선스 파일 추가 | [상세](devlog/2026-06-09/009-add-mit-license.md) |
