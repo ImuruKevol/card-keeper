@@ -1,0 +1,12 @@
+{
+    "id": "page.my_card",
+    "mode": "page",
+    "title": "/my-card",
+    "namespace": "my_card",
+    "category": "business",
+    "viewuri": "/my-card",
+    "preview": "",
+    "controller": "user",
+    "layout": "layout.sidebar",
+    "template": "wiz-page-my_card()"
+}

@@ -1,0 +1,8 @@
+{
+    "id": "my-card-share",
+    "title": "/share/my-card/<path:token>",
+    "route": "/share/my-card/<path:token>",
+    "category": "",
+    "viewuri": "",
+    "controller": ""
+}

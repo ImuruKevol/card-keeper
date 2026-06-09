@@ -4,6 +4,7 @@ class Struct:
         self.session = wiz.model("portal/season/session").use()
         self._User = wiz.model("struct/user")
         self._BusinessCard = wiz.model("struct/business_card")
+        self._MyCard = wiz.model("struct/my_card")
         self._UserSession = wiz.model("struct/user_session")
         self._AccessLog = wiz.model("struct/access_log")
         self._AiSetting = wiz.model("struct/ai_setting")
@@ -11,7 +12,7 @@ class Struct:
         self._init_tables()
 
     def _init_tables(self):
-        for name in ["user", "user_session", "access_log", "business_card", "ai_setting"]:
+        for name in ["user", "user_session", "access_log", "business_card", "my_card", "ai_setting"]:
             try:
                 db = self.orm.use(name)
                 db.orm.create_table(safe=True)
@@ -34,6 +35,10 @@ class Struct:
     @property
     def card(self):
         return self._BusinessCard(self)
+
+    @property
+    def my_card(self):
+        return self._MyCard(self)
 
     @property
     def user_session(self):

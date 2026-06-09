@@ -66,3 +66,14 @@
 | 2026-06-09 | 009 | MIT 라이선스 파일 추가 | [상세](devlog/2026-06-09/009-add-mit-license.md) |
 | 2026-06-09 | 010 | README WIZ·AI 개발 표기 및 영어 버전 추가 | [상세](devlog/2026-06-09/010-readme-wiz-ai-english.md) |
 | 2026-06-09 | 011 | README Demo 링크 추가 | [상세](devlog/2026-06-09/011-readme-demo-link.md) |
+| 2026-06-09 | 012 | Android 전화 수신 발신자 표시 설계 문서 추가 | [상세](devlog/2026-06-09/012-android-caller-id-design.md) |
+| 2026-06-09 | 013 | 내 명함 입력·이미지 공유·공개 링크 기능 추가 | [상세](devlog/2026-06-09/013-my-card-share.md) |
+| 2026-06-09 | 014 | 내 명함 미리보기·공유 이미지 렌더링 일치화 | [상세](devlog/2026-06-09/014-my-card-renderer-alignment.md) |
+| 2026-06-09 | 015 | Android 전화 수신 명함 오버레이 설계 요구사항 반영 | [상세](devlog/2026-06-09/015-android-caller-id-overlay-requirements.md) |
+| 2026-06-09 | 016 | 내 명함 이미지 레이아웃과 연락처 클릭 동작 개선 | [상세](devlog/2026-06-09/016-my-card-layout-contact-actions.md) |
+| 2026-06-09 | 017 | 내 명함 플로우 베이스 복원 및 모바일 Preview 우선 배치 | [상세](devlog/2026-06-09/017-my-card-flow-mobile-layout.md) |
+| 2026-06-09 | 018 | 내 명함 모바일 디자인·저장 위치 및 가로 확대 보기 개선 | [상세](devlog/2026-06-09/018-my-card-mobile-design-viewer.md) |
+| 2026-06-09 | 019 | Android 앱 빌드 및 개발 환경 구성 | [상세](devlog/2026-06-09/019-android-build-environment.md) |
+| 2026-06-09 | 020 | 폴드 펼침 화면의 내 명함 모바일 기준 통일 | [상세](devlog/2026-06-09/020-my-card-fold-mobile-breakpoint.md) |
+| 2026-06-09 | 021 | 내 명함 모바일 디자인 저장·공유 동작 및 베이스 재구성 | [상세](devlog/2026-06-09/021-my-card-design-save-share-redesign.md) |
+| 2026-06-09 | 022 | 내 명함 모던 베이스 배경 도형 절제 | [상세](devlog/2026-06-09/022-my-card-modern-background-simplify.md) |

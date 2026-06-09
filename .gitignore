@@ -9,6 +9,15 @@ playwright-report/
 test-results/
 package-lock.json
 
+# Android local build/runtime
+android/.gradle/
+android/.android-sdk/
+android/local.properties
+android/**/build/
+android/**/.cxx/
+android/**/*.apk
+android/**/*.aab
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -1,0 +1,146 @@
+section(class="page-toolbar")
+    div(class="toolbar-inner")
+        div(class="page-title")
+            span(class="title-icon")
+                svg(xmlns="http://www.w3.org/2000/svg", fill="none", viewBox="0 0 24 24", stroke-width="1.5", stroke="currentColor")
+                    path(stroke-linecap="round", stroke-linejoin="round", d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15A2.25 2.25 0 0 0 21.75 17.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15A2.25 2.25 0 0 0 2.25 6.75v10.5A2.25 2.25 0 0 0 4.5 19.5Z")
+            div
+                h1 내 명함
+                p {{publicStateLabel()}}
+        div(class="toolbar-actions")
+            a(routerLink="/cards", class="secondary-action manage-card-link")
+                svg(xmlns="http://www.w3.org/2000/svg", fill="none", viewBox="0 0 24 24", stroke-width="1.5", stroke="currentColor")
+                    path(stroke-linecap="round", stroke-linejoin="round", d="M15.75 19.5 8.25 12l7.5-7.5")
+                span 명함 관리
+            button(type="button", (click)="save(previewCanvas)", [disabled]="saving || publishing", class="primary-action desktop-save-action")
+                svg(xmlns="http://www.w3.org/2000/svg", fill="none", viewBox="0 0 24 24", stroke-width="1.5", stroke="currentColor")
+                    path(stroke-linecap="round", stroke-linejoin="round", d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z")
+                span {{saving ? '저장 중' : '저장'}}
+
+main(class="my-card-workbench")
+    div(*ngIf="loading", class="loading-state") 불러오는 중...
+
+    section(*ngIf="!loading", class="editor-panel")
+        div(class="section-heading")
+            span(class="eyebrow") Profile
+            h2 정보 입력
+        div(class="form-grid")
+            label(class="field-group required")
+                span 이름
+                input(type="text", [(ngModel)]="card.name", (input)="markDirty()", autocomplete="name", placeholder="홍길동")
+            label(class="field-group")
+                span 회사
+                input(type="text", [(ngModel)]="card.company", (input)="markDirty()", autocomplete="organization", placeholder="회사명")
+            label(class="field-group")
+                span 부서
+                input(type="text", [(ngModel)]="card.department", (input)="markDirty()", placeholder="브랜드팀")
+            label(class="field-group")
+                span 직책
+                input(type="text", [(ngModel)]="card.position", (input)="markDirty()", autocomplete="organization-title", placeholder="매니저")
+            label(class="field-group")
+                span 휴대폰
+                input(type="tel", [(ngModel)]="card.mobile", (input)="markDirty()", autocomplete="tel", placeholder="010-0000-0000")
+            label(class="field-group")
+                span 전화
+                input(type="tel", [(ngModel)]="card.phone", (input)="markDirty()", placeholder="02-000-0000")
+            label(class="field-group")
+                span 이메일
+                input(type="email", [(ngModel)]="card.email", (input)="markDirty()", autocomplete="email", placeholder="name@example.com")
+            label(class="field-group")
+                span 웹사이트
+                input(type="url", [(ngModel)]="card.website", (input)="markDirty()", placeholder="https://example.com")
+            label(class="field-group full")
+                span 주소
+                input(type="text", [(ngModel)]="card.address", (input)="markDirty()", autocomplete="street-address", placeholder="서울특별시 ...")
+            label(class="field-group full")
+                span 한 줄 소개
+                input(type="text", [(ngModel)]="card.tagline", (input)="markDirty()", maxlength="180", placeholder="담백하게 기억되는 문장")
+
+        button(type="button", (click)="save(previewCanvas)", [disabled]="saving || publishing", class="primary-action mobile-save-action")
+            svg(xmlns="http://www.w3.org/2000/svg", fill="none", viewBox="0 0 24 24", stroke-width="1.5", stroke="currentColor")
+                path(stroke-linecap="round", stroke-linejoin="round", d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z")
+            span {{saving ? '저장 중' : '저장'}}
+
+        div(class="desktop-design-section")
+            div(class="section-heading compact")
+                span(class="eyebrow") Design
+                h2 색상과 베이스
+            div(class="design-controls")
+                div(class="color-controls")
+                    label(class="color-field")
+                        span 메인 색상
+                        input(type="color", [(ngModel)]="card.main_color", (input)="markDirty()", (change)="markDirty()")
+                        strong {{card.main_color}}
+                    label(class="color-field")
+                        span 강조 색상
+                        input(type="color", [(ngModel)]="card.accent_color", (input)="markDirty()", (change)="markDirty()")
+                        strong {{card.accent_color}}
+                div(class="preset-row", aria-label="색상 프리셋")
+                    button(*ngFor="let preset of colorPresets()", type="button", (click)="applyPreset(preset)", [ngClass]="isPresetActive(preset) ? 'is-active' : ''", class="preset-button", [title]="preset.name")
+                        span(class="preset-swatch", [style.background]="preset.main")
+                        span(class="preset-swatch", [style.background]="preset.accent")
+                div(class="segmented-control", role="group", aria-label="명함 베이스")
+                    button(*ngFor="let option of themeOptions()", type="button", (click)="selectTheme(option.key)", [ngClass]="card.theme === option.key ? 'is-active' : ''") {{option.label}}
+
+    section(*ngIf="!loading", class="preview-panel")
+        div(class="section-heading preview-heading")
+            div
+                span(class="eyebrow") Preview
+                h2 명함 이미지
+            button(type="button", (click)="saveDesign(previewCanvas)", [disabled]="saving || publishing", class="primary-action preview-design-save-button")
+                svg(xmlns="http://www.w3.org/2000/svg", fill="none", viewBox="0 0 24 24", stroke-width="1.5", stroke="currentColor")
+                    path(stroke-linecap="round", stroke-linejoin="round", d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z")
+                span {{saving ? '저장 중' : '저장'}}
+        div(class="preview-stage")
+            canvas(#previewCanvas="", width="1200", height="680", class="card-canvas-preview", aria-label="내 명함 미리보기", role="button", tabindex="0", (click)="openLandscapePreview(previewCanvas)", (keydown.enter)="openLandscapePreview(previewCanvas)", (keydown.space)="openLandscapePreview(previewCanvas)")
+
+        section(class="mobile-design-section")
+            div(class="section-heading mobile-design-heading")
+                span(class="eyebrow") Design
+                h2 색상과 베이스
+            div(class="design-controls")
+                div(class="color-controls")
+                    label(class="color-field")
+                        span 메인 색상
+                        input(type="color", [(ngModel)]="card.main_color", (input)="markDirty()", (change)="markDirty()")
+                        strong {{card.main_color}}
+                    label(class="color-field")
+                        span 강조 색상
+                        input(type="color", [(ngModel)]="card.accent_color", (input)="markDirty()", (change)="markDirty()")
+                        strong {{card.accent_color}}
+                div(class="preset-row", aria-label="색상 프리셋")
+                    button(*ngFor="let preset of colorPresets()", type="button", (click)="applyPreset(preset)", [ngClass]="isPresetActive(preset) ? 'is-active' : ''", class="preset-button", [title]="preset.name")
+                        span(class="preset-swatch", [style.background]="preset.main")
+                        span(class="preset-swatch", [style.background]="preset.accent")
+                div(class="segmented-control", role="group", aria-label="명함 베이스")
+                    button(*ngFor="let option of themeOptions()", type="button", (click)="selectTheme(option.key)", [ngClass]="card.theme === option.key ? 'is-active' : ''") {{option.label}}
+
+        div(class="action-grid")
+            button(type="button", (click)="downloadCard(previewCanvas)", class="secondary-action")
+                svg(xmlns="http://www.w3.org/2000/svg", fill="none", viewBox="0 0 24 24", stroke-width="1.5", stroke="currentColor")
+                    path(stroke-linecap="round", stroke-linejoin="round", d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M7.5 10.5 12 15m0 0 4.5-4.5M12 15V3")
+                span 이미지 저장
+            button(type="button", (click)="shareImage(previewCanvas)", [disabled]="sharing", class="dark-action")
+                svg(xmlns="http://www.w3.org/2000/svg", fill="none", viewBox="0 0 24 24", stroke-width="1.5", stroke="currentColor")
+                    path(stroke-linecap="round", stroke-linejoin="round", d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 .934-1.863m-.934 1.863a2.25 2.25 0 0 0 .934-1.863m0-10.95a2.25 2.25 0 1 0-.934 1.863m.934-1.863a2.25 2.25 0 0 1-.934 1.863")
+                span {{sharing ? '공유 중' : '이미지 공유'}}
+            button(type="button", (click)="publishCard(previewCanvas)", [disabled]="publishing", class="primary-action")
+                svg(xmlns="http://www.w3.org/2000/svg", fill="none", viewBox="0 0 24 24", stroke-width="1.5", stroke="currentColor")
+                    path(stroke-linecap="round", stroke-linejoin="round", d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244")
+                span {{publishing ? '생성 중' : '공유 링크'}}
+
+        section(class="share-panel")
+            div(class="share-status")
+                span([ngClass]="card.public_enabled ? 'is-live' : ''")
+                strong {{publicStateLabel()}}
+            div(*ngIf="card.public_enabled && shareUrl", class="share-link-row")
+                input(type="text", [value]="shareUrl", readonly="")
+                button(type="button", (click)="copyShareUrl()", class="copy-button") {{copied ? '복사됨' : '복사'}}
+            button(*ngIf="card.public_enabled", type="button", (click)="unpublishCard()", [disabled]="publishing", class="text-danger-button") 링크 비활성화
+
+div(*ngIf="landscapePreviewOpen", class="landscape-viewer", role="dialog", aria-modal="true", aria-label="명함 크게 보기", (click)="closeLandscapePreview()")
+    div(class="landscape-viewer-inner")
+        img(*ngIf="landscapePreviewImage", [src]="landscapePreviewImage", alt="내 명함 크게 보기", class="landscape-card-image", (click)="$event.stopPropagation()")
+    button(type="button", class="landscape-close-button", (click)="closeLandscapePreview(); $event.stopPropagation()", aria-label="닫기")
+        svg(xmlns="http://www.w3.org/2000/svg", fill="none", viewBox="0 0 24 24", stroke-width="1.8", stroke="currentColor")
+            path(stroke-linecap="round", stroke-linejoin="round", d="M6 18 18 6M6 6l12 12")
