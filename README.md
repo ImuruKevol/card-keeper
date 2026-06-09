@@ -1,6 +1,6 @@
 # 명함장
 
-[English](README.en.md)
+[English](README.en.md) · [Demo](https://bus.sub.nanoha.kr/)
 
 [WIZ Framework](https://github.com/season-framework/wiz) 기반 개인용 명함 관리 PWA입니다. 사진 촬영/업로드 OCR, CSV/TXT/XLSX 가져오기, CSV/XLSX 내보내기, 관리자 승인 기반 사용자 관리, AI OCR Provider 설정까지 현재 개발 범위에 포함되어 있습니다.
 

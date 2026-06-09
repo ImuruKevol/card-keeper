@@ -1,6 +1,6 @@
 # Card Keeper
 
-[한국어](README.md)
+[한국어](README.md) · [Demo](https://bus.sub.nanoha.kr/)
 
 Card Keeper is a personal business card management PWA built with [WIZ Framework](https://github.com/season-framework/wiz). It currently covers photo capture/upload OCR, CSV/TXT/XLSX import, CSV/XLSX export, admin-approved user access, and AI OCR provider settings.
 
