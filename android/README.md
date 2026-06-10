@@ -36,14 +36,37 @@ APK 산출물:
 android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
-## 현재 스캐폴드
+## 구현된 MVP 범위
 
-- `MainActivity`: 역할 요청, 오버레이 권한 설정, 웹 명함장 열기 버튼 제공
-- `BusinessCardCallScreeningService`: 전화 수신 번호를 받아 정규화 후 오버레이 서비스 호출
-- `BusinessCardOverlayService`: `TYPE_APPLICATION_OVERLAY` 기반 임시 오버레이 표시
-- `PhoneNumberNormalizer`: 한국 전화번호 alias 정규화 유틸
+- `MainActivity`: 모바일 로그인, 명함 동기화, 역할/오버레이 권한 요청, 위치 프리셋, 테스트 오버레이 실행
+- `MobileApiClient`: WIZ 모바일 API 로그인, refresh, sync, overlay image 다운로드
+- `MobileTokenStore`: Android Keystore 기반 토큰 암호화 저장
+- `BusinessCardDatabase`: SQLite 로컬 명함/전화번호 인덱스/이미지 캐시 저장
+- `BusinessCardSyncManager`: 서버 증분 sync, 오버레이 이미지 파일 캐시, access token 만료 시 refresh 재시도
+- `BusinessCardCallScreeningService`: 수신 번호 정규화 후 오버레이 서비스 호출
+- `IncomingCallReceiver`: `PHONE_STATE` 기반 실제 수신 전화 감지 fallback
+- `BusinessCardDisplayController`: 로컬 DB 번호 매칭, 표시 모드에 따른 오버레이/heads-up 알림 분기, 최근 통화/SMS 이력 표시
+- `BusinessCardOverlayService`: 테스트 오버레이 표시, drag 위치 저장, 오버레이 권한이 없을 때 heads-up 알림 fallback
+- `BusinessCardNotification`: 알림 전용 표시와 명함 이미지 big picture/최근 기록 요약
+- `CardImageRenderer`: 이미지가 없는 명함을 위한 1200x680 가상 명함 Bitmap 렌더러
+- `PhoneNumberNormalizer`: 국내형/82 prefix 전화번호 alias 정규화
 
-다음 단계는 WIZ 모바일 sync API, Room 로컬 DB, 명함 이미지 캐시, `/my-card` 스타일 가상 명함 이미지 렌더러, 위치 조정 UI를 붙이는 것입니다.
+## 서버 API
+
+Android 앱은 WIZ 서버의 `/api/mobile/...` 라우트를 사용합니다.
+
+```text
+GET  /api/mobile/health
+POST /api/mobile/auth/login
+POST /api/mobile/auth/refresh
+POST /api/mobile/auth/logout
+GET  /api/mobile/cards/sync?since={iso8601}
+POST /api/mobile/cards/overlay-images
+GET  /api/mobile/cards/{id}/overlay-image?kind=front|back|generated
+POST /api/mobile/devices/{id}/overlay-settings
+```
+
+명함 sync는 삭제 tombstone, 전화번호 alias, `front/back/generated` 이미지 hash, 오버레이 이미지 종류를 내려줍니다. 앱은 hash가 바뀐 이미지만 배치 다운로드해 앱 전용 저장소에 캐시합니다.
 
 ## 실기 실행
 
@@ -56,4 +79,14 @@ cd android
 ./.android-sdk/platform-tools/adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-4. 앱에서 발신자 표시 역할과 오버레이 권한을 허용합니다.
+4. 앱에서 로그인 후 명함을 동기화합니다.
+5. 발신자 표시 역할과 오버레이 권한을 허용합니다.
+6. 테스트 오버레이로 위치를 확인하고 실제 수신 전화에서 매칭 동작을 검증합니다.
+
+## 남은 구현 과제
+
+- WorkManager 기반 주기적/재부팅 후 자동 sync
+- Room/Retrofit 등 Jetpack 스택 전환 여부 결정
+- 이미지 캐시 용량 제한과 오래된 파일 정리
+- 실제 One UI 8.5 이상 Galaxy 기기 QA 매트릭스 정리
+- 관리자용 모바일 기기 폐기 화면 추가

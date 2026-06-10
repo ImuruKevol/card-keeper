@@ -1,4 +1,8 @@
+import base64
 import datetime
+import hashlib
+import io
+import re
 
 
 class BusinessCard:
@@ -10,6 +14,8 @@ class BusinessCard:
         "name", "company", "department", "position", "email", "mobile", "phone",
         "address", "website", "tags", "memo", "source",
     ]
+    PHONE_KINDS = ["mobile", "phone"]
+    DATA_URL_RE = re.compile(r"^data:(image/[a-zA-Z0-9.+-]+);base64,(.+)$", re.S)
 
     def __init__(self, core):
         self.core = core
@@ -138,6 +144,25 @@ class BusinessCard:
             value = "".join([letter for letter in value if letter.isdigit()])
         return value
 
+    def _normalized_name_value(self, value):
+        return re.sub(r"\s+", "", str(value or "").strip().lower())
+
+    def same_name_candidates(self, owner_id, name, exclude_id="", limit=5):
+        target = self._normalized_name_value(name)
+        if not target:
+            return []
+
+        rows = []
+        for row in self._active_rows(owner_id):
+            if exclude_id and row.get("id") == exclude_id:
+                continue
+            if self._normalized_name_value(row.get("name")) != target:
+                continue
+            rows.append(row)
+            if len(rows) >= limit:
+                break
+        return rows
+
     def _duplicate_keys(self, row):
         keys = []
         email = self._normalized_key_value(row.get("email"))
@@ -234,6 +259,213 @@ class BusinessCard:
             if not row.get("mobile") and not row.get("email"):
                 missing_contact += 1
         return dict(total=total, companies=len(companies), missing_contact=missing_contact)
+
+    def _iso(self, value):
+        if not value:
+            return ""
+        if isinstance(value, str):
+            return value.replace(" ", "T") + ("Z" if "T" in value and not value.endswith("Z") else "")
+        return value.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    def _parse_since(self, value):
+        value = str(value or "").strip()
+        if not value:
+            return None
+        for candidate in [value, value.replace("Z", ""), value.replace("T", " ").replace("Z", "")]:
+            try:
+                return datetime.datetime.fromisoformat(candidate)
+            except Exception:
+                pass
+        return None
+
+    def _digest(self, value):
+        return hashlib.sha256(str(value or "").encode("utf-8")).hexdigest()
+
+    def _image_hash(self, value):
+        value = str(value or "").strip()
+        return self._digest(value) if self._has_image_data(value) else ""
+
+    def _has_image_data(self, value):
+        return self.DATA_URL_RE.match(str(value or "").strip()) is not None
+
+    def _number_aliases(self, raw):
+        text = str(raw or "").strip()
+        if not text:
+            return []
+        text = re.sub(r"^tel:\s*", "", text, flags=re.I)
+        text = re.split(r"(?:ext\.?|extension|내선|#)", text, maxsplit=1, flags=re.I)[0]
+        digits = "".join([char for char in text if char.isdigit()])
+        if not digits:
+            return []
+        aliases = [digits]
+        if digits.startswith("82") and len(digits) > 2:
+            aliases.append("0" + digits[2:])
+        if digits.startswith("0") and len(digits) > 1:
+            aliases.append("82" + digits[1:])
+        result = []
+        for alias in aliases:
+            if alias and alias not in result:
+                result.append(alias)
+        return result
+
+    def _phone_numbers(self, row):
+        numbers = []
+        for kind in self.PHONE_KINDS:
+            display = str(row.get(kind, "") or "").strip()
+            aliases = self._number_aliases(display)
+            if aliases:
+                numbers.append(dict(kind=kind, display_number=display, aliases=aliases))
+        return numbers
+
+    def _generated_hash(self, row):
+        keys = ["name", "company", "department", "position", "email", "mobile", "phone", "address", "website", "tags"]
+        return self._digest("|".join([str(row.get(key, "") or "") for key in keys]) + "|signature")
+
+    def _overlay_kind(self, row):
+        if self._has_image_data(row.get("front_image")):
+            return "front"
+        if self._has_image_data(row.get("back_image")):
+            return "back"
+        return "generated"
+
+    def _mobile_item(self, row):
+        deleted = row.get("status") != "active"
+        item = dict(
+            id=row.get("id", ""),
+            deleted=deleted,
+            updated_at=self._iso(row.get("updated")),
+        )
+        if deleted:
+            return item
+        item.update(dict(
+            name=row.get("name", ""),
+            company=row.get("company", ""),
+            department=row.get("department", ""),
+            position=row.get("position", ""),
+            email=row.get("email", ""),
+            mobile=row.get("mobile", ""),
+            phone=row.get("phone", ""),
+            address=row.get("address", ""),
+            website=row.get("website", ""),
+            tags=row.get("tags", ""),
+            memo_preview=str(row.get("memo", "") or "")[:120],
+            phone_numbers=self._phone_numbers(row),
+            image_hashes=dict(
+                front=self._image_hash(row.get("front_image")),
+                back=self._image_hash(row.get("back_image")),
+                generated=self._generated_hash(row),
+            ),
+            overlay_image_kind=self._overlay_kind(row),
+        ))
+        return item
+
+    def mobile_sync(self, owner_id, since="", limit=10000):
+        since_dt = self._parse_since(since)
+
+        def query(db, qs):
+            if since_dt is not None:
+                qs = qs.where(db.updated > since_dt)
+            return qs
+
+        rows = self.db.rows(
+            owner_id=owner_id,
+            query=query,
+            page=1,
+            dump=limit,
+            orderby="updated",
+            order="ASC",
+        )
+        return [self._mobile_item(row) for row in rows]
+
+    def _decode_data_url(self, value):
+        match = self.DATA_URL_RE.match(str(value or "").strip())
+        if match is None:
+            return None
+        mime = match.group(1)
+        try:
+            raw = base64.b64decode(match.group(2))
+        except Exception:
+            return None
+        return mime, raw
+
+    def _font(self, size, bold=False):
+        try:
+            from PIL import ImageFont
+            filename = "SUIT-Bold.otf" if bold else "SUIT-Regular.otf"
+            path = wiz.project.fs().abspath(f"src/assets/font/SUIT/{filename}")
+            return ImageFont.truetype(path, size)
+        except Exception:
+            try:
+                from PIL import ImageFont
+                return ImageFont.load_default()
+            except Exception:
+                return None
+
+    def _hex_color(self, value, fallback):
+        value = str(value or "").strip()
+        if re.match(r"^#[0-9a-fA-F]{6}$", value):
+            return value
+        return fallback
+
+    def _generated_image(self, row):
+        from PIL import Image, ImageDraw
+
+        width, height = 1200, 680
+        main = self._hex_color(row.get("main_color"), "#123c69")
+        accent = self._hex_color(row.get("accent_color"), "#14b8a6")
+        image = Image.new("RGB", (width, height), "#f7fbfa")
+        draw = ImageDraw.Draw(image)
+        draw.rounded_rectangle((34, 34, width - 34, height - 34), radius=34, fill="#ffffff", outline="#d8e6e1", width=2)
+        draw.rectangle((34, 34, 134, height - 34), fill=main)
+        draw.rectangle((134, 34, 148, height - 34), fill=accent)
+        draw.ellipse((width - 230, 74, width - 92, 212), fill=accent)
+        draw.ellipse((width - 188, 116, width - 52, 252), outline=main, width=8)
+
+        name = str(row.get("name") or "이름 없음")
+        company = str(row.get("company") or "")
+        title = " / ".join([part for part in [row.get("department"), row.get("position")] if part])
+        contacts = [
+            ("M", row.get("mobile", "")),
+            ("T", row.get("phone", "")),
+            ("E", row.get("email", "")),
+            ("W", row.get("website", "")),
+            ("A", row.get("address", "")),
+        ]
+
+        draw.text((210, 138), name, fill="#17201d", font=self._font(72, bold=True))
+        if company:
+            draw.text((214, 238), company, fill=main, font=self._font(36, bold=True))
+        if title:
+            draw.text((214, 294), title, fill="#475569", font=self._font(30))
+
+        y = 404
+        for label, value in contacts:
+            value = str(value or "").strip()
+            if not value:
+                continue
+            draw.rounded_rectangle((214, y - 8, 254, y + 32), radius=10, fill="#e8f5f2")
+            draw.text((226, y), label, fill=main, font=self._font(22, bold=True))
+            draw.text((278, y - 2), value[:58], fill="#26312d", font=self._font(26))
+            y += 48
+
+        output = io.BytesIO()
+        image.save(output, format="PNG")
+        return output.getvalue()
+
+    def mobile_overlay_image(self, owner_id, card_id, kind="generated"):
+        row = self.db.get(id=card_id, owner_id=owner_id, status="active")
+        if row is None:
+            return None
+        kind = kind if kind in ["front", "back", "generated"] else self._overlay_kind(row)
+        if kind in ["front", "back"]:
+            data = self._decode_data_url(row.get(f"{kind}_image"))
+            if data is not None:
+                mime, raw = data
+                ext = "jpg" if "jpeg" in mime or "jpg" in mime else "png"
+                return dict(kind=kind, mime=mime, data=raw, hash=self._image_hash(row.get(f"{kind}_image")), filename=f"{card_id}-{kind}.{ext}")
+            return None
+        raw = self._generated_image(row)
+        return dict(kind="generated", mime="image/png", data=raw, hash=self._generated_hash(row), filename=f"{card_id}-generated.png")
 
 
 Model = BusinessCard

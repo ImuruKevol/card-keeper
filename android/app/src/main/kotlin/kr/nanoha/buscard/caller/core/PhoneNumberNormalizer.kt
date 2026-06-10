@@ -1,8 +1,17 @@
 package kr.nanoha.buscard.caller.core
 
 object PhoneNumberNormalizer {
+    private val telPrefix = Regex("^tel:\\s*", RegexOption.IGNORE_CASE)
+    private val extensionMarker = Regex("ext\\.?|extension|내선|#", RegexOption.IGNORE_CASE)
+
     fun aliases(rawNumber: String?): Set<String> {
-        val digits = rawNumber.orEmpty().filter { it.isDigit() }
+        val mainNumber = rawNumber.orEmpty()
+            .trim()
+            .replace(telPrefix, "")
+            .split(extensionMarker, limit = 2)
+            .firstOrNull()
+            .orEmpty()
+        val digits = mainNumber.filter { it.isDigit() }
         if (digits.isBlank()) return emptySet()
 
         val values = linkedSetOf(digits)

@@ -144,6 +144,13 @@ def _payload():
     return data
 
 
+def _duplicate_candidate(row):
+    keys = ["id", "name", "company", "department", "position", "email", "mobile", "phone", "source"]
+    item = {key: row.get(key, "") for key in keys}
+    item["updated"] = _cell_text(row.get("updated", ""))
+    return item
+
+
 def _clean_line(line):
     return re.sub(r"\s+", " ", re.sub(r"[|•]", " ", line or "")).strip(" -_:;,.")
 
@@ -1238,7 +1245,20 @@ def get():
 def save():
     user_id = _current_user_id()
     card_id = wiz.request.query("id", "")
+    duplicate_action = wiz.request.query("duplicate_action", "")
     data = _payload()
+
+    if not card_id and duplicate_action != "create":
+        try:
+            duplicates = struct.card.same_name_candidates(user_id, data.get("name", ""))
+        except Exception as e:
+            wiz.response.status(400, message=str(e))
+        if duplicates:
+            wiz.response.status(
+                409,
+                message="같은 이름의 명함이 이미 있습니다.",
+                duplicates=[_duplicate_candidate(row) for row in duplicates],
+            )
 
     try:
         if card_id:

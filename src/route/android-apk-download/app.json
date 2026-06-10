@@ -1,0 +1,8 @@
+{
+    "id": "android-apk-download",
+    "title": "/download/android-app.apk",
+    "route": "/download/android-app.apk",
+    "category": "android",
+    "viewuri": "",
+    "controller": ""
+}

@@ -77,3 +77,27 @@
 | 2026-06-09 | 020 | 폴드 펼침 화면의 내 명함 모바일 기준 통일 | [상세](devlog/2026-06-09/020-my-card-fold-mobile-breakpoint.md) |
 | 2026-06-09 | 021 | 내 명함 모바일 디자인 저장·공유 동작 및 베이스 재구성 | [상세](devlog/2026-06-09/021-my-card-design-save-share-redesign.md) |
 | 2026-06-09 | 022 | 내 명함 모던 베이스 배경 도형 절제 | [상세](devlog/2026-06-09/022-my-card-modern-background-simplify.md) |
+| 2026-06-09 | 023 | 주요 화면 헤더 제거 및 액션 컨트롤 콘텐츠 영역 재배치 | [상세](devlog/2026-06-09/023-headerless-content-actions.md) |
+| 2026-06-09 | 024 | Android 모바일 sync API 및 Caller MVP 구현 | [상세](devlog/2026-06-09/024-android-mobile-sync-caller-mvp.md) |
+| 2026-06-09 | 025 | 모바일 명함 액션과 상단 메뉴 아이콘 레이아웃 개선 | [상세](devlog/2026-06-09/025-mobile-card-actions-topnav-icons.md) |
+| 2026-06-09 | 026 | 모바일 상단 메뉴 관리자 항목 숨김 및 일반 메뉴 라벨 표시 | [상세](devlog/2026-06-09/026-mobile-topnav-primary-labels.md) |
+| 2026-06-09 | 027 | 내 명함 모바일 화면 Android APK 다운로드 버튼 추가 | [상세](devlog/2026-06-09/027-my-card-mobile-apk-download.md) |
+| 2026-06-09 | 028 | 명함 등록 중복 확인 모달 및 삭제 확인 버튼 수정 | [상세](devlog/2026-06-09/028-card-duplicate-registration-delete-fix.md) |
+| 2026-06-09 | 029 | 명함 중복 선택 모달 정보 표시 보강 | [상세](devlog/2026-06-09/029-card-duplicate-modal-info.md) |
+| 2026-06-10 | 001 | Android 앱 로그인 및 기능 설정 UX 개선 | [상세](devlog/2026-06-10/001-android-app-login-settings-ux.md) |
+| 2026-06-10 | 002 | DB 라운드로빈 접속 불안정으로 인한 로그인/API 실패 완화 | [상세](devlog/2026-06-10/002-db-host-autodiscovery-login-api-stability.md) |
+| 2026-06-10 | 003 | Android 발신자 표시 권한 요청 흐름 보강 | [상세](devlog/2026-06-10/003-android-call-screening-role-request-fallback.md) |
+| 2026-06-10 | 004 | Android 발신자 표시 기본 앱 제약 안내 보강 | [상세](devlog/2026-06-10/004-android-call-screening-default-app-tradeoff.md) |
+| 2026-06-10 | 005 | Android 명함 표시 방식 오버레이/알림 선택 추가 | [상세](devlog/2026-06-10/005-android-card-display-mode-notification.md) |
+| 2026-06-10 | 006 | Android 실제 수신 전화 표시 연결 보강 | [상세](devlog/2026-06-10/006-android-call-screening-incoming-display-fix.md) |
+| 2026-06-10 | 007 | Android 수신 즉시 표시 및 최근 통화/문자 기록 추가 | [상세](devlog/2026-06-10/007-android-fast-caller-display-history.md) |
+| 2026-06-10 | 008 | Android 최근 통화 기록 통화 시간 표시 보강 | [상세](devlog/2026-06-10/008-android-call-history-duration-format.md) |
+| 2026-06-10 | 009 | Android 명함 없음 상태 최근 기록 표시 | [상세](devlog/2026-06-10/009-android-missing-card-history-display.md) |
+| 2026-06-10 | 010 | Android 실제 수신 전화 감지 fallback 보강 | [상세](devlog/2026-06-10/010-android-phone-state-fallback-display.md) |
+| 2026-06-10 | 011 | Android 알림 전용 명함 표시 및 기록 요약 개선 | [상세](devlog/2026-06-10/011-android-notification-only-history-summary.md) |
+| 2026-06-10 | 012 | Android 앱 아이콘 적용 | [상세](devlog/2026-06-10/012-android-app-icon.md) |
+| 2026-06-10 | 013 | Android 업로드 명함 이미지 표시 오류 수정 | [상세](devlog/2026-06-10/013-android-uploaded-card-image-cache-fix.md) |
+| 2026-06-10 | 014 | Android 명함 이미지 재동기화 UX 보강 | [상세](devlog/2026-06-10/014-android-image-resync-test-display.md) |
+| 2026-06-10 | 015 | Android 동기화 진행률 표시 추가 | [상세](devlog/2026-06-10/015-android-sync-progress-bar.md) |
+| 2026-06-10 | 016 | Android 이미지 배치 동기화 및 생성 이미지 fallback 제거 | [상세](devlog/2026-06-10/016-android-batch-image-sync-notification-fallback.md) |
+| 2026-06-10 | 017 | Android 앱 README 반영 및 커밋 전 민감정보 점검 | [상세](devlog/2026-06-10/017-readme-android-sensitive-git.md) |

@@ -38,6 +38,7 @@
 
 .page-title,
 .toolbar-actions,
+.section-actions,
 .action-grid,
 .share-link-row,
 .share-status,
@@ -108,6 +109,31 @@
 
 .mobile-design-section {
     display: none;
+}
+
+.apk-download-panel {
+    display: none;
+    grid-column: 1 / -1;
+}
+
+.apk-download-button {
+    display: inline-flex;
+    width: 100%;
+    min-height: 52px;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    border-radius: 8px;
+    background: #17201d;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.apk-download-button svg {
+    width: 20px;
+    height: 20px;
 }
 
 .primary-action,
@@ -206,6 +232,30 @@
     display: grid;
     gap: 5px;
     margin-bottom: 18px;
+}
+
+.editor-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.editor-heading > div {
+    min-width: 0;
+}
+
+.section-actions {
+    flex: 0 0 auto;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.state-label {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
 }
 
 .section-heading.compact {
@@ -724,6 +774,7 @@
     }
 
     .toolbar-actions,
+    .section-actions,
     .action-grid,
     .color-controls,
     .preview-footer {
@@ -732,13 +783,23 @@
     }
 
     .toolbar-actions .primary-action,
-    .toolbar-actions .secondary-action {
+    .toolbar-actions .secondary-action,
+    .section-actions .primary-action,
+    .section-actions .secondary-action {
         width: 100%;
     }
 
-    .manage-card-link,
     .desktop-save-action {
         display: none;
+    }
+
+    .section-actions {
+        display: none;
+    }
+
+    .editor-heading {
+        align-items: stretch;
+        flex-direction: column;
     }
 
     .mobile-save-action.primary-action {
@@ -772,6 +833,10 @@
     .mobile-design-section {
         display: grid;
         gap: 14px;
+    }
+
+    .apk-download-panel {
+        display: block;
     }
 
     .mobile-design-heading {

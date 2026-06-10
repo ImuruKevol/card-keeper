@@ -198,6 +198,28 @@
     padding-bottom: 34px;
 }
 
+.user-controls {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.user-search-actions {
+    display: flex;
+    min-width: 0;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.user-controls .search-field {
+    width: min(38vw, 360px);
+    flex: 0 1 360px;
+}
+
 .status-segments {
     display: inline-flex;
     width: fit-content;
@@ -526,6 +548,16 @@
     .toolbar-actions {
         width: 100%;
         flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
+    .user-controls {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .user-search-actions {
+        width: 100%;
         justify-content: flex-start;
     }
 

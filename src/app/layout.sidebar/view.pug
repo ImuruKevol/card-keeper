@@ -4,19 +4,21 @@ div(class="app-shell")
             a(routerLink="/cards", class="brand-link", aria-label="명함장")
                 img(src="/assets/brand/logo-black.svg", alt="명함장", class="brand-logo")
             nav(class="app-nav", aria-label="주요 메뉴")
-                a(routerLink="/cards", routerLinkActive="is-active", class="nav-item")
+                a(routerLink="/cards", routerLinkActive="is-active", class="nav-item primary-nav-item", aria-label="명함 목록")
                     svg(xmlns="http://www.w3.org/2000/svg", fill="none", viewBox="0 0 24 24", stroke-width="1.5", stroke="currentColor")
                         path(stroke-linecap="round", stroke-linejoin="round", d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15A2.25 2.25 0 0 0 21.75 17.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15A2.25 2.25 0 0 0 2.25 6.75v10.5A2.25 2.25 0 0 0 4.5 19.5Z")
-                    span 명함 관리
-                a(routerLink="/my-card", routerLinkActive="is-active", class="nav-item")
+                    span(class="desktop-nav-label") 명함 관리
+                    span(class="mobile-nav-label") 목록
+                a(routerLink="/my-card", routerLinkActive="is-active", class="nav-item primary-nav-item", aria-label="내 명함")
                     svg(xmlns="http://www.w3.org/2000/svg", fill="none", viewBox="0 0 24 24", stroke-width="1.5", stroke="currentColor")
                         path(stroke-linecap="round", stroke-linejoin="round", d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75A3 3 0 1 1 9 9.75a3 3 0 0 1 6 0Z")
-                    span 내 명함
-                a(*ngIf="service.auth.check.role('admin')", routerLink="/users", routerLinkActive="is-active", class="nav-item")
+                    span(class="desktop-nav-label") 내 명함
+                    span(class="mobile-nav-label") 내 명함
+                a(*ngIf="service.auth.check.role('admin')", routerLink="/users", routerLinkActive="is-active", class="nav-item admin-nav-item", aria-label="사용자 관리")
                     svg(xmlns="http://www.w3.org/2000/svg", fill="none", viewBox="0 0 24 24", stroke-width="1.5", stroke="currentColor")
                         path(stroke-linecap="round", stroke-linejoin="round", d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772")
                     span 사용자 관리
-                a(*ngIf="service.auth.check.role('admin')", routerLink="/ai-settings", routerLinkActive="is-active", class="nav-item")
+                a(*ngIf="service.auth.check.role('admin')", routerLink="/ai-settings", routerLinkActive="is-active", class="nav-item admin-nav-item", aria-label="AI 설정")
                     svg(xmlns="http://www.w3.org/2000/svg", fill="none", viewBox="0 0 24 24", stroke-width="1.5", stroke="currentColor")
                         path(stroke-linecap="round", stroke-linejoin="round", d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Zm8.25-5.654.563 1.969 1.969.563-1.969.563-.563 1.969-.563-1.969-1.969-.563 1.969-.563.563-1.969Zm0-7.5.563 1.969 1.969.563-1.969.563-.563 1.969-.563-1.969-1.969-.563 1.969-.563.563-1.969Z")
                     span AI 설정

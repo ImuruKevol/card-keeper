@@ -6,13 +6,14 @@ class Struct:
         self._BusinessCard = wiz.model("struct/business_card")
         self._MyCard = wiz.model("struct/my_card")
         self._UserSession = wiz.model("struct/user_session")
+        self._MobileDevice = wiz.model("struct/mobile_device")
         self._AccessLog = wiz.model("struct/access_log")
         self._AiSetting = wiz.model("struct/ai_setting")
         self._packages = {}
         self._init_tables()
 
     def _init_tables(self):
-        for name in ["user", "user_session", "access_log", "business_card", "my_card", "ai_setting"]:
+        for name in ["user", "user_session", "mobile_device", "access_log", "business_card", "my_card", "ai_setting"]:
             try:
                 db = self.orm.use(name)
                 db.orm.create_table(safe=True)
@@ -43,6 +44,10 @@ class Struct:
     @property
     def user_session(self):
         return self._UserSession(self)
+
+    @property
+    def mobile_device(self):
+        return self._MobileDevice(self)
 
     @property
     def access_log(self):

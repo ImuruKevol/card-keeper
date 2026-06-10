@@ -52,6 +52,7 @@
 
 .title-icon svg,
 .toolbar-actions svg,
+.load-model-action svg,
 .icon-button svg {
     width: 18px;
     height: 18px;
@@ -195,7 +196,30 @@
 
 .inline-field {
     display: flex;
+    min-width: 0;
     gap: 8px;
+}
+
+.api-key-field {
+    flex-wrap: wrap;
+}
+
+.api-key-field .form-input {
+    flex: 1 1 280px;
+}
+
+.load-model-action {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.form-actions .primary-action {
+    min-width: 112px;
 }
 
 .form-input,
@@ -414,5 +438,10 @@
 
     .toolbar-actions {
         flex-wrap: wrap;
+    }
+
+    .load-model-action,
+    .form-actions .primary-action {
+        width: 100%;
     }
 }

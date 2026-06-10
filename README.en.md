@@ -2,7 +2,7 @@
 
 [한국어](README.md) · [Demo](https://bus.sub.nanoha.kr/)
 
-Card Keeper is a personal business card management PWA built with [WIZ Framework](https://github.com/season-framework/wiz). It currently covers photo capture/upload OCR, CSV/TXT/XLSX import, CSV/XLSX export, admin-approved user access, and AI OCR provider settings.
+Card Keeper is a personal business card management PWA and Android incoming-call business card display app built with [WIZ Framework](https://github.com/season-framework/wiz). It currently covers photo capture/upload OCR, CSV/TXT/XLSX import, CSV/XLSX export, admin-approved user access, AI OCR provider settings, Android card sync, and incoming-call display.
 
 This project was developed with AI-assisted development.
 
@@ -14,6 +14,7 @@ This project was developed with AI-assisted development.
 - Business card OCR uses server-side Tesseract by default and can use admin-enabled OpenAI, Google, or Ollama Vision providers as an AI fallback.
 - Import supports CSV, TXT, and XLSX files with automatic column mapping, duplicate handling, and an option to append unmapped columns to memo.
 - Export downloads the current search result as CSV or XLSX.
+- The Android app is built with Gradle under `android/` and uses the WIZ mobile API for login, incremental card sync, image caching, and incoming-call card overlay/notification display.
 
 ## Screenshots
 
@@ -38,8 +39,25 @@ The README assets use ReviewOps screenshots. The list screen contains registered
 
 - `/access`: login and signup request
 - `/cards`: business card list, search, sort, pagination, detail view, photo OCR registration, import, and export
+- `/my-card`: own card editing, design saving, image sharing, public link, and Android APK download
 - `/users`: admin-only user approval, activation/blocking, and role changes
 - `/ai-settings`: admin-only AI OCR provider, model, and API key settings
+
+## Android App
+
+The native app lives under `android/` and targets Galaxy / One UI 8.5 or later with JDK 17 and Compile/Target SDK 36. See [android/README.md](android/README.md) for SDK setup and real-device steps.
+
+- The server base URL is `https://bus.sub.nanoha.kr/` through Android `BuildConfig.WEB_BASE_URL`.
+- The app signs in to `/api/mobile/...` routes and incrementally syncs cards, phone aliases, and overlay images.
+- Access/refresh tokens are stored through an Android Keystore-backed store, while cards and image cache are stored in app-private SQLite/files.
+- Incoming calls are detected through `CallScreeningService` and a `PHONE_STATE` fallback; matched numbers show a card image or heads-up notification with recent call/SMS history.
+- The mobile `/my-card` screen exposes an APK download button, and `/download/android-app.apk` serves `android/app/build/outputs/apk/debug/app-debug.apk`.
+
+```bash
+cd android
+./scripts/setup-android-sdk.sh
+./gradlew :app:assembleDebug
+```
 
 ## Project Structure
 
@@ -48,11 +66,14 @@ src/
 ├── app/
 │   ├── page.access/        # Login / signup request
 │   ├── page.cards/         # OCR / list / detail / import / export
+│   ├── page.my_card/       # Own card editing / sharing / Android APK download
 │   ├── page.users/         # Admin-only user management
 │   ├── page.ai_settings/   # Admin-only AI OCR provider settings
 │   └── layout.sidebar/     # Shared top app bar layout after auth
 ├── route/
-│   └── manifest/           # /manifest.json PWA manifest
+│   ├── manifest/           # /manifest.json PWA manifest
+│   ├── mobile-api/         # Android auth / sync / image API
+│   └── android-apk-download/ # /download/android-app.apk
 ├── controller/
 │   ├── base.py             # Session initialization and request parsing
 │   ├── user.py             # Login, active status, session token validation
@@ -70,6 +91,8 @@ src/
         ├── access_log.py
         ├── ai_setting.py
         └── business_card.py
+android/
+└── app/                    # Android incoming-call business card display app
 ```
 
 ## Local and Production Settings
@@ -123,6 +146,18 @@ Production DB settings should be injected through deployment-specific `config/da
 - `GET /wiz/api/page.cards/get` - fetch one card
 - `POST /wiz/api/page.cards/save` - create or update a card
 - `POST /wiz/api/page.cards/remove` - delete a card
+
+### Android Mobile
+
+- `GET /api/mobile/health` - check mobile API health
+- `POST /api/mobile/auth/login` - Android app login and token issuance
+- `POST /api/mobile/auth/refresh` - refresh access token
+- `POST /api/mobile/auth/logout` - end mobile session
+- `GET /api/mobile/cards/sync?since={iso8601}` - incremental card and phone alias sync
+- `POST /api/mobile/cards/overlay-images` - batch-download overlay images
+- `GET /api/mobile/cards/{id}/overlay-image?kind=front|back|generated` - download one overlay image
+- `POST /api/mobile/devices/{id}/overlay-settings` - save Android display settings
+- `GET /download/android-app.apk` - download Android debug APK
 
 ### Admin
 

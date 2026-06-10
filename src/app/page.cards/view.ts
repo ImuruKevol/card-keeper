@@ -1287,6 +1287,53 @@ export class Component implements OnInit {
         await this.service.render();
     }
 
+    private duplicateContactValue(value: any) {
+        const text = this.cleanValue(value);
+        return text || '-';
+    }
+
+    private duplicateCardInfoBlock(title: string, card: any) {
+        return [
+            title,
+            `이름: ${this.duplicateContactValue(card.name)}`,
+            `이메일: ${this.duplicateContactValue(card.email)}`,
+            `핸드폰: ${this.duplicateContactValue(card.mobile || card.phone)}`,
+        ].join('\n');
+    }
+
+    private duplicateCardMessage(name: string, duplicates: any[], payload: any) {
+        const first = duplicates[0] || {};
+        const countText = duplicates.length > 1 ? `\n동일 이름 후보 ${duplicates.length}건 중 최근 수정된 명함에 적용합니다.` : '';
+        const overwriteInfo = this.duplicateCardInfoBlock('덮어쓰기 대상', first);
+        const createInfo = this.duplicateCardInfoBlock('새로 추가할 명함', payload);
+        return `${name} 이름의 명함이 이미 있습니다.${countText}\n\n${overwriteInfo}\n\n${createInfo}\n\n같은 사람이라면 덮어쓰고, 다른 사람이면 새 명함으로 추가하세요.`;
+    }
+
+    private async resolveDuplicateSave(payload: any, data: any) {
+        const duplicates = (data && data.duplicates) || [];
+        if (this.formMode !== 'create' || duplicates.length === 0) {
+            return { code: 409, data };
+        }
+
+        this.saving = false;
+        await this.service.render();
+
+        const overwrite = await this.service.modal.warning(
+            this.duplicateCardMessage(payload.name, duplicates, payload),
+            '덮어쓰기',
+            '새로 추가',
+            '같은 이름의 명함'
+        );
+
+        this.saving = true;
+        await this.service.render();
+
+        if (overwrite) {
+            return await wiz.call('save', { ...payload, id: duplicates[0].id });
+        }
+        return await wiz.call('save', { ...payload, duplicate_action: 'create' });
+    }
+
     public async save() {
         if (!this.form.name) {
             await this.service.modal.error('이름을 확인해주세요.');
@@ -1303,7 +1350,12 @@ export class Component implements OnInit {
             back_image: back.preview || this.form.back_image || '',
             tags: ''
         };
-        const { code, data } = await wiz.call('save', payload);
+        let { code, data } = await wiz.call('save', payload);
+        if (code === 409) {
+            const response = await this.resolveDuplicateSave(payload, data);
+            code = response.code;
+            data = response.data;
+        }
         this.saving = false;
 
         if (code === 200) {
@@ -1318,7 +1370,7 @@ export class Component implements OnInit {
             }
             await this.load(this.search.page);
         } else {
-            await this.service.modal.error(data.message || '저장에 실패했습니다.');
+            await this.service.modal.error((data && data.message) || '저장에 실패했습니다.');
         }
         await this.service.render();
     }
@@ -1329,7 +1381,7 @@ export class Component implements OnInit {
     }
 
     public async remove(card: any) {
-        const ok = await this.service.modal.error(`${card.name} 명함을 삭제하시겠습니까?`, '취소', '삭제');
+        const ok = await this.service.modal.error(`${card.name} 명함을 삭제하시겠습니까?`, '삭제', '취소');
         if (!ok) return;
 
         const { code, data } = await wiz.call('remove', { id: card.id });

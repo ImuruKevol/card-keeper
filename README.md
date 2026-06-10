@@ -2,7 +2,7 @@
 
 [English](README.en.md) · [Demo](https://bus.sub.nanoha.kr/)
 
-[WIZ Framework](https://github.com/season-framework/wiz) 기반 개인용 명함 관리 PWA입니다. 사진 촬영/업로드 OCR, CSV/TXT/XLSX 가져오기, CSV/XLSX 내보내기, 관리자 승인 기반 사용자 관리, AI OCR Provider 설정까지 현재 개발 범위에 포함되어 있습니다.
+[WIZ Framework](https://github.com/season-framework/wiz) 기반 개인용 명함 관리 PWA와 Android 전화 수신 명함 표시 앱입니다. 사진 촬영/업로드 OCR, CSV/TXT/XLSX 가져오기, CSV/XLSX 내보내기, 관리자 승인 기반 사용자 관리, AI OCR Provider 설정, Android 명함 동기화와 수신 전화 표시까지 현재 개발 범위에 포함되어 있습니다.
 
 이 프로젝트는 AI 기반 개발 지원을 활용해 개발되었습니다.
 
@@ -14,6 +14,7 @@
 - 명함 OCR은 서버 Tesseract 분석을 기본으로 하고, 관리자가 활성화한 OpenAI/Google/Ollama Vision Provider를 AI fallback으로 사용할 수 있습니다.
 - 파일 가져오기는 CSV/TXT/XLSX를 지원하고, 자동 컬럼 매핑, 중복 처리, 매핑 안 된 컬럼 메모 병합 옵션을 제공합니다.
 - 내보내기는 현재 검색 조건을 기준으로 CSV 또는 XLSX 포맷을 선택해 내려받습니다.
+- Android 앱은 `android/`에서 Gradle로 빌드하며, WIZ 모바일 API로 로그인, 명함 증분 동기화, 이미지 캐시, 수신 전화 명함 오버레이/알림 표시를 수행합니다.
 
 ## 스크린샷
 
@@ -38,8 +39,25 @@ ReviewOps 첨부 스크린샷을 README용 자산으로 반영했습니다. 목�
 
 - `/access`: 로그인과 가입 신청
 - `/cards`: 명함 목록, 검색, 정렬, 페이지네이션, 상세 확인, 사진 OCR 등록, 파일 가져오기/내보내기
+- `/my-card`: 내 명함 작성, 디자인 저장, 이미지 공유, 공개 링크, Android APK 다운로드
 - `/users`: 관리자 전용 사용자 승인, 활성화/차단, 권한 변경
 - `/ai-settings`: 관리자 전용 AI OCR Provider, 모델, API Key 설정
+
+## Android 앱
+
+네이티브 앱 코드는 `android/` 아래에 있으며 Galaxy / One UI 8.5 이상, JDK 17, Compile/Target SDK 36 기준으로 구성되어 있습니다. 자세한 SDK 설치와 실기 실행 절차는 [android/README.md](android/README.md)를 확인합니다.
+
+- 서버 주소는 Android `BuildConfig.WEB_BASE_URL`의 `https://bus.sub.nanoha.kr/`를 사용합니다.
+- 앱은 `/api/mobile/...` 라우트에 로그인해 명함, 전화번호 alias, 오버레이 이미지를 증분 동기화합니다.
+- access/refresh token은 Android Keystore 기반 저장소에 보관하고, 명함과 이미지 캐시는 앱 전용 SQLite/파일 저장소에 저장합니다.
+- 실제 수신 전화는 `CallScreeningService`와 `PHONE_STATE` fallback으로 감지하며, 번호 매칭 성공 시 명함 이미지 또는 heads-up 알림과 최근 통화/SMS 이력을 표시합니다.
+- `/my-card` 모바일 화면에서 APK 다운로드 버튼을 제공하고, `/download/android-app.apk` 라우트가 `android/app/build/outputs/apk/debug/app-debug.apk`를 내려줍니다.
+
+```bash
+cd android
+./scripts/setup-android-sdk.sh
+./gradlew :app:assembleDebug
+```
 
 ## 주요 구조
 
@@ -48,11 +66,14 @@ src/
 ├── app/
 │   ├── page.access/        # 로그인 / 가입 신청
 │   ├── page.cards/         # 명함 OCR / 목록 / 상세 / 가져오기 / 내보내기
+│   ├── page.my_card/       # 내 명함 작성 / 공유 / Android APK 다운로드
 │   ├── page.users/         # 관리자 전용 사용자 승인/관리
 │   ├── page.ai_settings/   # 관리자 전용 AI OCR Provider 설정
 │   └── layout.sidebar/     # 인증 후 상단 앱바 공통 레이아웃
 ├── route/
-│   └── manifest/           # /manifest.json PWA manifest
+│   ├── manifest/           # /manifest.json PWA manifest
+│   ├── mobile-api/         # Android 앱 인증 / sync / 이미지 API
+│   └── android-apk-download/ # /download/android-app.apk
 ├── controller/
 │   ├── base.py             # 세션 초기화 및 요청 파싱
 │   ├── user.py             # 로그인/활성 상태/세션 토큰 검증
@@ -70,6 +91,8 @@ src/
         ├── access_log.py
         ├── ai_setting.py
         └── business_card.py
+android/
+└── app/                    # Android 전화 수신 명함 표시 앱
 ```
 
 ## 로컬/운영 설정
@@ -123,6 +146,18 @@ src/
 - `GET /wiz/api/page.cards/get` - 명함 단건 조회
 - `POST /wiz/api/page.cards/save` - 명함 등록 또는 수정
 - `POST /wiz/api/page.cards/remove` - 명함 삭제 처리
+
+### Android 모바일
+
+- `GET /api/mobile/health` - 모바일 API 상태 확인
+- `POST /api/mobile/auth/login` - Android 앱 로그인 및 토큰 발급
+- `POST /api/mobile/auth/refresh` - access token 갱신
+- `POST /api/mobile/auth/logout` - 모바일 세션 종료
+- `GET /api/mobile/cards/sync?since={iso8601}` - 명함/전화번호 alias 증분 동기화
+- `POST /api/mobile/cards/overlay-images` - 오버레이 이미지 배치 다운로드
+- `GET /api/mobile/cards/{id}/overlay-image?kind=front|back|generated` - 단일 오버레이 이미지 다운로드
+- `POST /api/mobile/devices/{id}/overlay-settings` - Android 표시 설정 저장
+- `GET /download/android-app.apk` - Android debug APK 다운로드
 
 ### 관리자
 
