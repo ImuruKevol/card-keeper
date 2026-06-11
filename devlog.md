@@ -101,3 +101,5 @@
 | 2026-06-10 | 015 | Android 동기화 진행률 표시 추가 | [상세](devlog/2026-06-10/015-android-sync-progress-bar.md) |
 | 2026-06-10 | 016 | Android 이미지 배치 동기화 및 생성 이미지 fallback 제거 | [상세](devlog/2026-06-10/016-android-batch-image-sync-notification-fallback.md) |
 | 2026-06-10 | 017 | Android 앱 README 반영 및 커밋 전 민감정보 점검 | [상세](devlog/2026-06-10/017-readme-android-sensitive-git.md) |
+| 2026-06-11 | 001 | Android 스크린샷 익명화 및 README 추가 | [상세](devlog/2026-06-11/001-readme-android-screenshots.md) |
+| 2026-06-11 | 002 | README 개발 배경 및 Android 호환성 메모 추가 | [상세](devlog/2026-06-11/002-readme-background-android-compatibility.md) |

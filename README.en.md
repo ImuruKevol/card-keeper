@@ -16,9 +16,13 @@ This project was developed with AI-assisted development.
 - Export downloads the current search result as CSV or XLSX.
 - The Android app is built with Gradle under `android/` and uses the WIZ mobile API for login, incremental card sync, image caching, and incoming-call card overlay/notification display.
 
+## Background
+
+I had been using an existing business card app, but over time its other features became the main focus and the address book management felt neglected, so I built this directly.
+
 ## Screenshots
 
-The README assets use ReviewOps screenshots. The list screen contains registered business card data, so only a derived image with dummy names, companies, and phone numbers is stored.
+The list screen and Android incoming-call/notification screens contain real names, companies, and phone numbers, so only derived images with dummy data are stored.
 
 | Login | Card List |
 |-------|-----------|
@@ -27,6 +31,10 @@ The README assets use ReviewOps screenshots. The list screen contains registered
 | Photo Analysis Registration | File Import |
 |-----------------------------|-------------|
 | <img src="docs/screenshots/card-photo-register.png" width="260" alt="Photo analysis registration screen"> | <img src="docs/screenshots/card-import.png" width="260" alt="File import screen"> |
+
+| Android App Settings | Android Notification | Incoming Call |
+|----------------------|----------------------|---------------|
+| <img src="docs/screenshots/android-app-settings.png" width="180" alt="Android app settings screen"> | <img src="docs/screenshots/android-notification-sanitized.png" width="180" alt="Sanitized Android notification screen"> | <img src="docs/screenshots/android-phone-sanitized.png" width="180" alt="Sanitized incoming call screen"> |
 
 ## First Access Flow
 
@@ -52,6 +60,12 @@ The native app lives under `android/` and targets Galaxy / One UI 8.5 or later w
 - Access/refresh tokens are stored through an Android Keystore-backed store, while cards and image cache are stored in app-private SQLite/files.
 - Incoming calls are detected through `CallScreeningService` and a `PHONE_STATE` fallback; matched numbers show a card image or heads-up notification with recent call/SMS history.
 - The mobile `/my-card` screen exposes an APK download button, and `/download/android-app.apk` serves `android/app/build/outputs/apk/debug/app-debug.apk`.
+
+### Android Compatibility Notes
+
+- Incoming-call card display has been verified on actual calls.
+- In Korea, apps such as `에X닷` that only require the default phone app setting can be used together.
+- Apps such as `후X콜` that require the default "Caller ID & spam app" role cannot be used at the same time because they compete for the same Android default-app role.
 
 ```bash
 cd android

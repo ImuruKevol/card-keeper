@@ -16,9 +16,13 @@
 - 내보내기는 현재 검색 조건을 기준으로 CSV 또는 XLSX 포맷을 선택해 내려받습니다.
 - Android 앱은 `android/`에서 Gradle로 빌드하며, WIZ 모바일 API로 로그인, 명함 증분 동기화, 이미지 캐시, 수신 전화 명함 오버레이/알림 표시를 수행합니다.
 
+## 개발 배경
+
+기존에 사용하던 명함 앱이 있었지만 시간이 지나면서 다른 기능들이 메인이 되었고, 명함첩 관리 기능은 제대로 관리되지 않는 느낌이 있어 직접 만들었습니다.
+
 ## 스크린샷
 
-ReviewOps 첨부 스크린샷을 README용 자산으로 반영했습니다. 목록 화면은 실제 등록 명함의 이름, 회사, 연락처가 포함되어 있어 더미 데이터로 익명화한 파생 이미지만 저장했습니다.
+목록 화면과 Android 수신/알림 화면은 실제 이름, 회사, 연락처가 포함되어 있어 더미 데이터로 익명화한 파생 이미지만 저장했습니다.
 
 | 로그인 | 명함 목록 |
 |--------|-----------|
@@ -27,6 +31,10 @@ ReviewOps 첨부 스크린샷을 README용 자산으로 반영했습니다. 목�
 | 사진 분석 등록 | 파일 가져오기 |
 |----------------|---------------|
 | <img src="docs/screenshots/card-photo-register.png" width="260" alt="사진 분석 등록 화면"> | <img src="docs/screenshots/card-import.png" width="260" alt="파일 가져오기 화면"> |
+
+| Android 앱 설정 | Android 알림 | 전화 수신 화면 |
+|-----------------|--------------|----------------|
+| <img src="docs/screenshots/android-app-settings.png" width="180" alt="Android 앱 설정 화면"> | <img src="docs/screenshots/android-notification-sanitized.png" width="180" alt="익명화된 Android 알림 화면"> | <img src="docs/screenshots/android-phone-sanitized.png" width="180" alt="익명화된 전화 수신 화면"> |
 
 ## 초기 접속 흐름
 
@@ -52,6 +60,12 @@ ReviewOps 첨부 스크린샷을 README용 자산으로 반영했습니다. 목�
 - access/refresh token은 Android Keystore 기반 저장소에 보관하고, 명함과 이미지 캐시는 앱 전용 SQLite/파일 저장소에 저장합니다.
 - 실제 수신 전화는 `CallScreeningService`와 `PHONE_STATE` fallback으로 감지하며, 번호 매칭 성공 시 명함 이미지 또는 heads-up 알림과 최근 통화/SMS 이력을 표시합니다.
 - `/my-card` 모바일 화면에서 APK 다운로드 버튼을 제공하고, `/download/android-app.apk` 라우트가 `android/app/build/outputs/apk/debug/app-debug.apk`를 내려줍니다.
+
+### Android 호환성 메모
+
+- 실제 수신 전화에서 명함이 정상 표시되는 것을 확인했습니다.
+- 한국 기준으로 `에X닷`처럼 기본 전화 앱 설정만 요구하는 앱은 함께 사용할 수 있습니다.
+- `후X콜`처럼 "발신번호 표시 및 스팸 확인" 기본 앱 설정을 요구하는 앱은 같은 기본 앱 역할을 사용하므로 동시에 사용할 수 없습니다.
 
 ```bash
 cd android
