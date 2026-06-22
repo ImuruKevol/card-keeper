@@ -53,8 +53,12 @@ data class CachedBusinessCard(
     val isMissingCard: Boolean
         get() = id.startsWith(MISSING_CARD_ID_PREFIX)
 
+    val hasResolvedMissingName: Boolean
+        get() = isMissingCard && name.isNotBlank() && name != MISSING_CARD_TITLE
+
     companion object {
         const val MISSING_CARD_ID_PREFIX = "missing-card:"
+        const val MISSING_CARD_TITLE = "등록된 명함 없음"
     }
 }
 

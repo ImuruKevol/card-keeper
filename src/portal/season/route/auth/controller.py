@@ -4,6 +4,14 @@ LOGOUT_URI = config.auth_logout_uri
 LOGIN_URL = config.auth_login_uri
 
 
+def _no_store():
+    wiz.response.headers.set(**{
+        "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+        "Pragma": "no-cache",
+        "Expires": "0",
+    })
+
+
 def _valid_session():
     if wiz.session.get("id") is None:
         return False
@@ -26,11 +34,13 @@ def _valid_session():
 
 
 if wiz.request.match(f"{BASEURI}/check") is not None:
+    _no_store()
     status = _valid_session()
     data = wiz.session.get() if status else {}
     wiz.response.status(200, status=status, session=data)
 
 if wiz.request.match(f"{BASEURI}/logout") is not None:
+    _no_store()
     returnTo = wiz.request.query("returnTo", "/access")
     wiz.session.set(returnTo=returnTo)
 
@@ -51,6 +61,7 @@ if wiz.request.match(f"{BASEURI}/logout") is not None:
     wiz.response.redirect(returnTo)
 
 if wiz.request.match(f"{BASEURI}/login") is not None:
+    _no_store()
     if LOGIN_URL is not None and LOGIN_URL != f"{BASEURI}/login":
         wiz.response.redirect(LOGIN_URL)
 

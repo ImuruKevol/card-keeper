@@ -8,22 +8,35 @@ export default class Auth {
     public status: any = null;
     public loading: any = null;
     public session: any = {};
+    public request: Request;
 
     constructor(public service: Service) {
         this.request = new Request();
     }
 
+    private async checkSession() {
+        let result: any = { code: 500, data: {} };
+        for (let attempt = 0; attempt < 2; attempt++) {
+            result = await this.request.post('/auth/check', {}, { cache: 'no-store', credentials: 'same-origin' });
+            if (result.code == 200) return result;
+            await new Promise((resolve) => setTimeout(resolve, 250));
+        }
+        return result;
+    }
+
     public async init() {
         try {
-            let { code, data } = await this.request.post('/auth/check');
+            let { code, data } = await this.checkSession();
+            data = data || {};
             let { status, session } = data;
+            session = session || {};
             this.verified = session.verified;
             this.loading = true;
             if (code != 200)
                 return this;
             this.timestamp = new Date().getTime();
             this.session = session;
-            this.status = status;
+            this.status = !!status;
         } catch (e) {
             this.loading = true;
         }

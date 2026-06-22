@@ -4,6 +4,7 @@ import android.content.Context
 import kr.nanoha.buscard.caller.core.PhoneNumberNormalizer
 import kr.nanoha.buscard.caller.data.BusinessCardDatabase
 import kr.nanoha.buscard.caller.data.CachedBusinessCard
+import kr.nanoha.buscard.caller.data.CallerNameResolver
 import kr.nanoha.buscard.caller.data.ContactHistoryReader
 import kr.nanoha.buscard.caller.overlay.BusinessCardNotification
 
@@ -19,7 +20,7 @@ object IncomingCallerDisplay {
         val key = aliases.sorted().joinToString("|")
         if (isDuplicate(key)) return true
 
-        val card = BusinessCardDatabase(appContext).findByPhoneAliases(aliases) ?: missingCard(rawNumber)
+        val card = BusinessCardDatabase(appContext).findByPhoneAliases(aliases) ?: missingCard(appContext, rawNumber, aliases)
         val history = ContactHistoryReader.summary(appContext, aliases)
         BusinessCardNotification.show(appContext, card, history)
         return true
@@ -36,12 +37,13 @@ object IncomingCallerDisplay {
         return duplicate
     }
 
-    private fun missingCard(rawNumber: String): CachedBusinessCard {
-        val displayNumber = rawNumber.ifBlank { "알 수 없는 번호" }
+    private fun missingCard(context: Context, rawNumber: String, aliases: Set<String>): CachedBusinessCard {
+        val displayNumber = PhoneNumberNormalizer.display(rawNumber).ifBlank { rawNumber.ifBlank { "알 수 없는 번호" } }
+        val resolvedName = CallerNameResolver.resolveName(context, rawNumber, aliases)
         return CachedBusinessCard(
             id = "${CachedBusinessCard.MISSING_CARD_ID_PREFIX}${displayNumber.hashCode()}",
-            name = "등록된 명함 없음",
-            company = "",
+            name = resolvedName.ifBlank { CachedBusinessCard.MISSING_CARD_TITLE },
+            company = if (resolvedName.isNotBlank()) CachedBusinessCard.MISSING_CARD_TITLE else "",
             department = "",
             position = "",
             email = "",

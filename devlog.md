@@ -103,3 +103,11 @@
 | 2026-06-10 | 017 | Android 앱 README 반영 및 커밋 전 민감정보 점검 | [상세](devlog/2026-06-10/017-readme-android-sensitive-git.md) |
 | 2026-06-11 | 001 | Android 스크린샷 익명화 및 README 추가 | [상세](devlog/2026-06-11/001-readme-android-screenshots.md) |
 | 2026-06-11 | 002 | README 개발 배경 및 Android 호환성 메모 추가 | [상세](devlog/2026-06-11/002-readme-background-android-compatibility.md) |
+| 2026-06-11 | 003 | Android 알림 전화번호 하이픈 표시 적용 | [상세](devlog/2026-06-11/003-duplicate-alert-phone-format.md) |
+| 2026-06-11 | 004 | PWA 로그인 세션 유지 안정화 | [상세](devlog/2026-06-11/004-pwa-login-session-persistence.md) |
+| 2026-06-11 | 005 | Android 미등록 명함 알림 연락처 이름 표시 | [상세](devlog/2026-06-11/005-android-missing-card-contact-name.md) |
+| 2026-06-12 | 001 | PWA 모바일 상단 메뉴 중앙 정렬 및 액션 버튼 라벨 정리 | [상세](devlog/2026-06-12/001-pwa-mobile-ui-actions.md) |
+| 2026-06-12 | 002 | 모바일 명함 등록 버튼 제거 및 촬영 아이콘 보정 | [상세](devlog/2026-06-12/002-mobile-register-button-camera-icon.md) |
+| 2026-06-15 | 001 | cropper 조작 중 깜빡임 안정화 | [상세](devlog/2026-06-15/001-cropper-flicker-stability.md) |
+| 2026-06-15 | 002 | cropper 마스크 합성 안정화 | [상세](devlog/2026-06-15/002-cropper-mask-compositing.md) |
+| 2026-06-22 | 001 | 내 명함 저장 시 캔버스 참조 오류 수정 | [상세](devlog/2026-06-22/001-my-card-save-canvas-fallback.md) |

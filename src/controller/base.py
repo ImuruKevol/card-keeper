@@ -7,6 +7,12 @@ from flask import request
 class Controller:
     def __init__(self):
         wiz.session = wiz.model("portal/season/session").use()
+
+        try:
+            wiz.model("portal/season/config").session_refresh()
+        except Exception:
+            pass
+
         sessiondata = wiz.session.get()
         wiz.response.data.set(session=sessiondata)
 

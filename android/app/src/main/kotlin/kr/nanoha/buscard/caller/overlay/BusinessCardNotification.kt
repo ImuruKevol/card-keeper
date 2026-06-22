@@ -12,6 +12,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import kr.nanoha.buscard.caller.BuildConfig
+import kr.nanoha.buscard.caller.core.PhoneNumberNormalizer
 import kr.nanoha.buscard.caller.data.CachedBusinessCard
 import kr.nanoha.buscard.caller.data.ContactHistoryEntry
 import kr.nanoha.buscard.caller.data.ContactHistorySummary
@@ -34,8 +35,13 @@ object BusinessCardNotification {
 
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("${BuildConfig.WEB_BASE_URL.trimEnd('/')}/cards"))
         val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-        val title = if (card.isMissingCard) "등록된 명함 없음" else card.name.ifBlank { card.displayPhone.ifBlank { "명함장" } }
-        val cardText = listOf(card.primaryLine, card.displayPhone).filter { it.isNotBlank() }.joinToString(" · ")
+        val displayPhone = PhoneNumberNormalizer.display(card.displayPhone)
+        val title = when {
+            card.hasResolvedMissingName -> card.name
+            card.isMissingCard -> CachedBusinessCard.MISSING_CARD_TITLE
+            else -> card.name.ifBlank { displayPhone.ifBlank { "명함장" } }
+        }
+        val cardText = listOf(card.primaryLine, displayPhone).filter { it.isNotBlank() }.joinToString(" · ")
         val latestText = history.entries.firstOrNull()?.displayText ?: cardText
         val collapsedText = listOf(history.monthCountText, latestText).filter { it.isNotBlank() }.joinToString(" · ")
         val expandedText = expandedText(history, cardText)

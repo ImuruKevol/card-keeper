@@ -213,7 +213,7 @@ class MainActivity : Activity() {
         permissionCard.addView(actionButton("기본 앱으로 설정", ButtonStyle.Secondary) { requestCallScreeningRole() }, blockParams(bottom = 8))
         contactsPermissionStateText = valueText("")
         permissionCard.addView(infoRow("연락처 접근", contactsPermissionStateText))
-        permissionCard.addView(supportText("휴대폰 연락처에 저장된 번호도 수신 감지하려면 필요합니다."), blockParams(top = 4, bottom = 8))
+        permissionCard.addView(supportText("휴대폰 연락처에 저장된 번호의 이름을 수신 알림에 표시할 때 필요합니다."), blockParams(top = 4, bottom = 8))
         if (!hasContactPermission()) {
             permissionCard.addView(actionButton("연락처 권한 허용", ButtonStyle.Secondary) { requestContactPermission() }, blockParams(bottom = 8))
         }
@@ -227,7 +227,7 @@ class MainActivity : Activity() {
         smsPermissionStateText = valueText("")
         permissionCard.addView(infoRow("통화 기록", callLogPermissionStateText))
         permissionCard.addView(infoRow("문자 기록", smsPermissionStateText))
-        permissionCard.addView(supportText("최근 통화 및 문자 기록과 최근 한 달 건수를 알림에 함께 표시할 때 필요합니다."), blockParams(top = 4, bottom = 8))
+        permissionCard.addView(supportText("최근 통화 및 문자 기록, 최근 한 달 건수, 일부 기기의 캐시 이름을 알림에 표시할 때 필요합니다."), blockParams(top = 4, bottom = 8))
         if (!hasCallLogPermission() || !hasSmsPermission()) {
             permissionCard.addView(actionButton("기록 권한 허용", ButtonStyle.Secondary) { requestHistoryPermissions() }, blockParams(bottom = 8))
         }

@@ -18,7 +18,9 @@ export default class Request {
             const headers = new Headers(options.headers || {});
             const requestOptions: RequestInit = {
                 ...options,
-                method: options.method || "POST"
+                method: options.method || "POST",
+                credentials: options.credentials || "same-origin",
+                cache: options.cache || "no-store"
             };
 
             if (data instanceof FormData || data instanceof URLSearchParams || data instanceof Blob) {

@@ -316,10 +316,12 @@
 
 @media (max-width: 1080px), (hover: none) and (pointer: coarse) {
     .header-inner {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
         height: 54px;
         min-height: 54px;
         flex-wrap: nowrap;
-        justify-content: flex-start;
+        justify-content: stretch;
         gap: 6px;
         overflow: hidden;
         padding: 0 10px;
@@ -328,6 +330,7 @@
     .brand-link {
         flex: 0 0 auto;
         min-width: auto;
+        justify-self: start;
     }
 
     .brand-logo {
@@ -338,6 +341,7 @@
         order: 0;
         width: auto;
         flex: 0 0 auto;
+        justify-self: center;
         gap: 3px;
         overflow: visible;
         padding: 3px;
@@ -367,8 +371,9 @@
 
     .header-actions {
         flex: 0 0 auto;
+        justify-self: end;
         gap: 4px;
-        margin-left: auto;
+        margin-left: 0;
     }
 
     .user-chip {

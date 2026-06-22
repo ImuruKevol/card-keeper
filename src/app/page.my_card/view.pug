@@ -8,7 +8,7 @@ main(class="my-card-workbench")
                 h2 정보 입력
                 p(class="state-label") {{publicStateLabel()}}
             div(class="section-actions")
-                button(type="button", (click)="save(previewCanvas)", [disabled]="saving || publishing", class="primary-action desktop-save-action")
+                button(type="button", (click)="save()", [disabled]="saving || publishing", class="primary-action desktop-save-action")
                     svg(xmlns="http://www.w3.org/2000/svg", fill="none", viewBox="0 0 24 24", stroke-width="1.5", stroke="currentColor")
                         path(stroke-linecap="round", stroke-linejoin="round", d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z")
                     span {{saving ? '저장 중' : '저장'}}
@@ -44,7 +44,7 @@ main(class="my-card-workbench")
                 span 한 줄 소개
                 input(type="text", [(ngModel)]="card.tagline", (input)="markDirty()", maxlength="180", placeholder="담백하게 기억되는 문장")
 
-        button(type="button", (click)="save(previewCanvas)", [disabled]="saving || publishing", class="primary-action mobile-save-action")
+        button(type="button", (click)="save()", [disabled]="saving || publishing", class="primary-action mobile-save-action")
             svg(xmlns="http://www.w3.org/2000/svg", fill="none", viewBox="0 0 24 24", stroke-width="1.5", stroke="currentColor")
                 path(stroke-linecap="round", stroke-linejoin="round", d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z")
             span {{saving ? '저장 중' : '저장'}}

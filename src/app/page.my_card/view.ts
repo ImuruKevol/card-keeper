@@ -142,7 +142,7 @@ export class Component implements OnInit {
         return this.card.public_enabled ? '공개 중' : '비공개';
     }
 
-    public async save(canvas: HTMLCanvasElement) {
+    public async save(canvas?: HTMLCanvasElement) {
         if (!await this.ensureValid()) return;
         this.saving = true;
         await this.service.render();
@@ -159,18 +159,18 @@ export class Component implements OnInit {
         await this.service.render();
     }
 
-    public async saveDesign(canvas: HTMLCanvasElement) {
+    public async saveDesign(canvas?: HTMLCanvasElement) {
         await this.save(canvas);
     }
 
-    public async downloadCard(canvas: HTMLCanvasElement) {
+    public async downloadCard(canvas?: HTMLCanvasElement) {
         if (!await this.ensureValid()) return;
         const imageData = await this.prepareCardImage(canvas);
         this.card.card_image = imageData;
         this.downloadDataUrl(imageData, `${this.filenameBase()}-business-card.jpg`);
     }
 
-    public async shareImage(canvas: HTMLCanvasElement) {
+    public async shareImage(canvas?: HTMLCanvasElement) {
         if (!await this.ensureValid()) return;
         this.sharing = true;
         await this.service.render();
@@ -194,7 +194,7 @@ export class Component implements OnInit {
         await this.service.render();
     }
 
-    public async publishCard(canvas: HTMLCanvasElement) {
+    public async publishCard(canvas?: HTMLCanvasElement) {
         if (!await this.ensureValid()) return;
         this.publishing = true;
         await this.service.render();
@@ -247,8 +247,8 @@ export class Component implements OnInit {
         await this.service.render();
     }
 
-    public async openLandscapePreview(canvas: HTMLCanvasElement) {
-        if (!this.isMobileViewport() || !canvas) return;
+    public async openLandscapePreview(canvas?: HTMLCanvasElement) {
+        if (!this.isMobileViewport()) return;
         this.landscapePreviewImage = await this.prepareCardImage(canvas);
         this.landscapePreviewOpen = true;
         document.body.style.overflow = 'hidden';
@@ -386,10 +386,10 @@ export class Component implements OnInit {
         return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
     }
 
-    private async prepareCardImage(canvas: HTMLCanvasElement) {
+    private async prepareCardImage(canvas?: HTMLCanvasElement) {
         const doc: any = document as any;
         if (doc.fonts && doc.fonts.ready) await doc.fonts.ready;
-        return this.renderCardImage(canvas);
+        return this.renderCardImage(this.resolveCardCanvas(canvas));
     }
 
     private renderCardImage(canvas: HTMLCanvasElement) {
@@ -464,6 +464,12 @@ export class Component implements OnInit {
         });
 
         return canvas.toDataURL('image/jpeg', 0.9);
+    }
+
+    private resolveCardCanvas(canvas?: HTMLCanvasElement) {
+        if (canvas) return canvas;
+        const preview = document.querySelector('.card-canvas-preview') as HTMLCanvasElement;
+        return preview || document.createElement('canvas');
     }
 
     private drawBackground(ctx: CanvasRenderingContext2D, width: number, height: number, main: string, accent: string, theme: string) {

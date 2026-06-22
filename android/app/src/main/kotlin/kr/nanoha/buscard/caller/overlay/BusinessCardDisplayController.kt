@@ -16,6 +16,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import kr.nanoha.buscard.caller.core.PhoneNumberNormalizer
 import kr.nanoha.buscard.caller.data.CachedBusinessCard
 import kr.nanoha.buscard.caller.data.ContactHistoryEntry
 import java.io.File
@@ -138,13 +139,17 @@ object BusinessCardDisplayController {
             addView(LinearLayout(context).apply {
                 orientation = LinearLayout.VERTICAL
                 addView(TextView(context).apply {
-                    text = "등록된 명함 없음"
+                    text = if (card.hasResolvedMissingName) card.name else CachedBusinessCard.MISSING_CARD_TITLE
                     textSize = 18f
                     setTextColor(Color.rgb(23, 32, 29))
                 })
-                if (card.displayPhone.isNotBlank()) {
+                val detail = listOf(
+                    if (card.hasResolvedMissingName) CachedBusinessCard.MISSING_CARD_TITLE else "",
+                    PhoneNumberNormalizer.display(card.displayPhone).ifBlank { card.displayPhone },
+                ).filter { it.isNotBlank() }.joinToString(" · ")
+                if (detail.isNotBlank()) {
                     addView(TextView(context).apply {
-                        text = card.displayPhone
+                        text = detail
                         textSize = 13f
                         setTextColor(Color.rgb(87, 99, 93))
                         setPadding(0, dp(context, 4), 0, 0)

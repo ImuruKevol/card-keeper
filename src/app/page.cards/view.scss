@@ -1936,6 +1936,7 @@
     cursor: grab;
     touch-action: none;
     user-select: none;
+    contain: layout paint;
     background: #050806;
 }
 
@@ -1945,27 +1946,41 @@
 
 .cropper-photo {
     position: absolute;
+    z-index: 1;
     top: 50%;
     left: 50%;
     opacity: 0;
     max-width: none;
     max-height: none;
     transform-origin: center center;
+    transform: translate3d(-50%, -50%, 0);
+    backface-visibility: hidden;
     will-change: transform, opacity;
+}
+
+.crop-dim {
+    position: absolute;
+    z-index: 2;
+    background: rgba(0, 0, 0, 0.62);
+    pointer-events: none;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    contain: strict;
 }
 
 .crop-frame {
     position: absolute;
+    z-index: 3;
     top: 50%;
     left: 50%;
     width: min(82vw, 680px, calc((100vh - 176px) * 1.58));
     max-width: calc(100vw - 32px);
     max-height: calc(100% - 32px);
     aspect-ratio: 1.58 / 1;
-    transform: translate(-50%, -50%);
+    transform: translate3d(-50%, -50%, 0);
     border: 2px solid rgba(255, 255, 255, 0.96);
     border-radius: 8px;
-    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.62);
+    backface-visibility: hidden;
     pointer-events: none;
 }
 
@@ -2109,6 +2124,14 @@
     .capture-actions .dark-action svg {
         width: 18px;
         height: 18px;
+    }
+
+    .capture-toolbar-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .capture-toolbar-actions .primary-action {
+        display: none;
     }
 
     .toolbar-actions {
@@ -2302,6 +2325,7 @@
     }
 
     .capture-toolbar-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
     }
 

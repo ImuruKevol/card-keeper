@@ -1,7 +1,7 @@
-import { OnInit } from '@angular/core';
+import { NgZone, OnDestroy, OnInit } from '@angular/core';
 import { Service } from '@wiz/libs/portal/season/service';
 
-export class Component implements OnInit {
+export class Component implements OnInit, OnDestroy {
     public loading: boolean = false;
     public saving: boolean = false;
     public analyzing: boolean = false;
@@ -30,13 +30,21 @@ export class Component implements OnInit {
     public captureSlots: any[] = this.emptyCaptureSlots();
     public analysis: any = this.defaultAnalysis();
     public cropper: any = this.emptyCropper();
+    private cropperCleanup: any[] = [];
+    private cropperFrame: number = 0;
 
-    constructor(public service: Service) { }
+    constructor(public service: Service, private zone: NgZone) { }
 
     public async ngOnInit() {
         await this.service.init();
         await this.service.auth.allow('/access');
         await this.load();
+    }
+
+    public ngOnDestroy() {
+        this.releaseCropperListeners();
+        this.cancelCropperFrame();
+        this.releaseCropperUrl();
     }
 
     public emptyForm() {
@@ -92,10 +100,17 @@ export class Component implements OnInit {
             offsetX: 0,
             offsetY: 0,
             dragging: false,
+            dragPointerId: null,
             dragStartX: 0,
             dragStartY: 0,
             dragOffsetX: 0,
             dragOffsetY: 0,
+            stageWidth: 0,
+            stageHeight: 0,
+            frameLeft: 0,
+            frameTop: 0,
+            frameWidth: 0,
+            frameHeight: 0,
         };
     }
 
@@ -633,6 +648,8 @@ export class Component implements OnInit {
     }
 
     public async closeForm() {
+        this.releaseCropperListeners();
+        this.cancelCropperFrame();
         this.releaseCropperUrl();
         this.cropper = this.emptyCropper();
         this.showForm = false;
@@ -749,6 +766,8 @@ export class Component implements OnInit {
     }
 
     private async openImageCropper(file: File, side: string) {
+        this.releaseCropperListeners();
+        this.cancelCropperFrame();
         this.releaseCropperUrl();
         const loaded = await this.loadCropImage(file);
         const slot = this.captureSlot(side);
@@ -765,7 +784,8 @@ export class Component implements OnInit {
             naturalHeight: loaded.image.naturalHeight || loaded.image.height,
         };
         await this.service.render();
-        window.requestAnimationFrame(() => {
+        this.cropperFrame = window.requestAnimationFrame(() => {
+            this.cropperFrame = 0;
             this.initializeCropperViewport();
         });
     }
@@ -776,12 +796,22 @@ export class Component implements OnInit {
         }
     }
 
+    private cancelCropperFrame() {
+        if (!this.cropperFrame) return;
+        window.cancelAnimationFrame(this.cropperFrame);
+        this.cropperFrame = 0;
+    }
+
     private cropStageElement() {
         return document.querySelector('.cropper-stage') as HTMLElement;
     }
 
     private cropFrameElement() {
         return document.querySelector('.crop-frame') as HTMLElement;
+    }
+
+    private cropDimElement(name: string) {
+        return document.querySelector(`.crop-dim-${name}`) as HTMLElement;
     }
 
     private cropPhotoElement() {
@@ -794,6 +824,68 @@ export class Component implements OnInit {
 
     private cropScaleValueElement() {
         return document.querySelector('.cropper-scale-value') as HTMLElement;
+    }
+
+    private releaseCropperListeners() {
+        for (const cleanup of this.cropperCleanup) {
+            try {
+                cleanup();
+            } catch (error) {
+                continue;
+            }
+        }
+        this.cropperCleanup = [];
+    }
+
+    private bindCropperControls(stage: HTMLElement) {
+        this.releaseCropperListeners();
+        const input = this.cropScaleInputElement();
+
+        this.zone.runOutsideAngular(() => {
+            const pointerDown = (event: any) => this.startCropDrag(event);
+            const pointerMove = (event: any) => this.moveCropDrag(event);
+            const pointerEnd = (event: any) => this.endCropDrag(event);
+            const wheel = (event: any) => this.onCropWheel(event);
+            const inputChange = (event: any) => this.onCropScaleInput(event);
+            const resize = () => this.scheduleCropperResize();
+
+            stage.addEventListener('pointerdown', pointerDown);
+            stage.addEventListener('pointermove', pointerMove);
+            stage.addEventListener('pointerup', pointerEnd);
+            stage.addEventListener('pointercancel', pointerEnd);
+            stage.addEventListener('lostpointercapture', pointerEnd);
+            stage.addEventListener('wheel', wheel, { passive: false });
+            window.addEventListener('resize', resize);
+            if (input) input.addEventListener('input', inputChange);
+
+            this.cropperCleanup = [
+                () => stage.removeEventListener('pointerdown', pointerDown),
+                () => stage.removeEventListener('pointermove', pointerMove),
+                () => stage.removeEventListener('pointerup', pointerEnd),
+                () => stage.removeEventListener('pointercancel', pointerEnd),
+                () => stage.removeEventListener('lostpointercapture', pointerEnd),
+                () => stage.removeEventListener('wheel', wheel),
+                () => window.removeEventListener('resize', resize),
+            ];
+            if (input) this.cropperCleanup.push(() => input.removeEventListener('input', inputChange));
+        });
+    }
+
+    private scheduleCropperResize() {
+        if (!this.cropper.visible) return;
+        if (this.cropperFrame) return;
+        this.cropperFrame = window.requestAnimationFrame(() => {
+            this.cropperFrame = 0;
+            this.initializeCropperViewport();
+        });
+    }
+
+    private requestCropperSync() {
+        if (this.cropperFrame) return;
+        this.cropperFrame = window.requestAnimationFrame(() => {
+            this.cropperFrame = 0;
+            this.syncCropperPhoto();
+        });
     }
 
     private initializeCropperViewport() {
@@ -817,17 +909,29 @@ export class Component implements OnInit {
         this.cropper.scale = this.cropper.minScale;
         this.cropper.offsetX = 0;
         this.cropper.offsetY = 0;
+        this.cropper.stageWidth = stageRect.width;
+        this.cropper.stageHeight = stageRect.height;
+        this.cropper.frameLeft = frameRect.left - stageRect.left;
+        this.cropper.frameTop = frameRect.top - stageRect.top;
+        this.cropper.frameWidth = frameRect.width;
+        this.cropper.frameHeight = frameRect.height;
         this.constrainCropper();
+        this.syncCropperMask();
+        this.syncCropperPhoto();
+        this.bindCropperControls(stage);
     }
 
     public cropImageTransform() {
-        return `translate(calc(-50% + ${this.cropper.offsetX}px), calc(-50% + ${this.cropper.offsetY}px)) scale(${this.cropper.scale})`;
+        const offsetX = Number(this.cropper.offsetX || 0).toFixed(2);
+        const offsetY = Number(this.cropper.offsetY || 0).toFixed(2);
+        return `translate3d(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px), 0) scale(${this.cropper.scale})`;
     }
 
     public startCropDrag(event: any) {
         if (!this.cropper.visible) return;
         event.preventDefault();
         this.cropper.dragging = true;
+        this.cropper.dragPointerId = event.pointerId;
         this.cropper.dragStartX = event.clientX;
         this.cropper.dragStartY = event.clientY;
         this.cropper.dragOffsetX = this.cropper.offsetX;
@@ -839,14 +943,17 @@ export class Component implements OnInit {
 
     public moveCropDrag(event: any) {
         if (!this.cropper.dragging) return;
+        if (this.cropper.dragPointerId !== null && event.pointerId !== this.cropper.dragPointerId) return;
         event.preventDefault();
         this.cropper.offsetX = this.cropper.dragOffsetX + (event.clientX - this.cropper.dragStartX);
         this.cropper.offsetY = this.cropper.dragOffsetY + (event.clientY - this.cropper.dragStartY);
         this.constrainCropper();
+        this.requestCropperSync();
     }
 
     public endCropDrag(event?: any) {
         this.cropper.dragging = false;
+        this.cropper.dragPointerId = null;
         if (event && event.currentTarget && event.currentTarget.releasePointerCapture) {
             try {
                 event.currentTarget.releasePointerCapture(event.pointerId);
@@ -869,6 +976,7 @@ export class Component implements OnInit {
     }
 
     public resetCropper() {
+        this.cancelCropperFrame();
         this.initializeCropperViewport();
     }
 
@@ -876,23 +984,20 @@ export class Component implements OnInit {
         const next = Math.max(this.cropper.minScale, Math.min(this.cropper.maxScale, value || this.cropper.minScale));
         this.cropper.scale = Number(next.toFixed(2));
         this.constrainCropper();
+        this.requestCropperSync();
     }
 
     private constrainCropper() {
-        const stage = this.cropStageElement();
-        const frame = this.cropFrameElement();
-        if (!stage || !frame) return;
+        if (!this.cropper.stageWidth || !this.cropper.stageHeight || !this.cropper.frameWidth || !this.cropper.frameHeight) return;
 
-        const stageRect = stage.getBoundingClientRect();
-        const frameRect = frame.getBoundingClientRect();
         const imageWidth = this.cropper.baseWidth * this.cropper.scale;
         const imageHeight = this.cropper.baseHeight * this.cropper.scale;
-        const centerX = stageRect.width / 2;
-        const centerY = stageRect.height / 2;
-        const frameLeft = frameRect.left - stageRect.left;
-        const frameTop = frameRect.top - stageRect.top;
-        const frameRight = frameLeft + frameRect.width;
-        const frameBottom = frameTop + frameRect.height;
+        const centerX = this.cropper.stageWidth / 2;
+        const centerY = this.cropper.stageHeight / 2;
+        const frameLeft = this.cropper.frameLeft;
+        const frameTop = this.cropper.frameTop;
+        const frameRight = frameLeft + this.cropper.frameWidth;
+        const frameBottom = frameTop + this.cropper.frameHeight;
 
         const minOffsetX = frameRight - centerX - imageWidth / 2;
         const maxOffsetX = frameLeft - centerX + imageWidth / 2;
@@ -901,7 +1006,6 @@ export class Component implements OnInit {
 
         this.cropper.offsetX = this.clamp(this.cropper.offsetX, minOffsetX, maxOffsetX);
         this.cropper.offsetY = this.clamp(this.cropper.offsetY, minOffsetY, maxOffsetY);
-        this.syncCropperPhoto();
     }
 
     private clamp(value: number, min: number, max: number) {
@@ -912,10 +1016,12 @@ export class Component implements OnInit {
     private syncCropperPhoto() {
         const photo = this.cropPhotoElement();
         if (photo) {
-            photo.style.width = `${this.cropper.baseWidth}px`;
-            photo.style.height = `${this.cropper.baseHeight}px`;
+            const width = `${this.cropper.baseWidth}px`;
+            const height = `${this.cropper.baseHeight}px`;
+            if (photo.style.width !== width) photo.style.width = width;
+            if (photo.style.height !== height) photo.style.height = height;
             photo.style.transform = this.cropImageTransform();
-            photo.style.opacity = '1';
+            if (photo.style.opacity !== '1') photo.style.opacity = '1';
         }
 
         const input = this.cropScaleInputElement();
@@ -931,7 +1037,37 @@ export class Component implements OnInit {
         }
     }
 
+    private syncCropperMask() {
+        const stageWidth = Math.max(0, Math.round(this.cropper.stageWidth || 0));
+        const stageHeight = Math.max(0, Math.round(this.cropper.stageHeight || 0));
+        const frameLeft = Math.max(0, Math.round(this.cropper.frameLeft || 0));
+        const frameTop = Math.max(0, Math.round(this.cropper.frameTop || 0));
+        const frameWidth = Math.max(0, Math.round(this.cropper.frameWidth || 0));
+        const frameHeight = Math.max(0, Math.round(this.cropper.frameHeight || 0));
+        const frameRight = Math.min(stageWidth, frameLeft + frameWidth);
+        const frameBottom = Math.min(stageHeight, frameTop + frameHeight);
+
+        this.syncCropperDim('top', 0, 0, stageWidth, frameTop);
+        this.syncCropperDim('right', frameRight, frameTop, stageWidth - frameRight, frameBottom - frameTop);
+        this.syncCropperDim('bottom', 0, frameBottom, stageWidth, stageHeight - frameBottom);
+        this.syncCropperDim('left', 0, frameTop, frameLeft, frameBottom - frameTop);
+    }
+
+    private syncCropperDim(name: string, x: number, y: number, width: number, height: number) {
+        const dim = this.cropDimElement(name);
+        if (!dim) return;
+
+        const nextWidth = `${Math.max(0, Math.round(width))}px`;
+        const nextHeight = `${Math.max(0, Math.round(height))}px`;
+        const nextTransform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0)`;
+        if (dim.style.width !== nextWidth) dim.style.width = nextWidth;
+        if (dim.style.height !== nextHeight) dim.style.height = nextHeight;
+        if (dim.style.transform !== nextTransform) dim.style.transform = nextTransform;
+    }
+
     public async cancelCropper() {
+        this.releaseCropperListeners();
+        this.cancelCropperFrame();
         this.releaseCropperUrl();
         this.cropper = this.emptyCropper();
         await this.service.render();
@@ -946,6 +1082,8 @@ export class Component implements OnInit {
             slot.preview = dataUrl;
             slot.status = 'ready';
             this.form.source = 'photo';
+            this.releaseCropperListeners();
+            this.cancelCropperFrame();
             this.releaseCropperUrl();
             this.cropper = this.emptyCropper();
 
