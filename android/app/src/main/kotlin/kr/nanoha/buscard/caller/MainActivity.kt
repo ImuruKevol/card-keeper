@@ -22,6 +22,7 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.ScrollView
+import android.widget.Switch
 import android.widget.TextView
 import kr.nanoha.buscard.caller.auth.MobileTokenStore
 import kr.nanoha.buscard.caller.core.PhoneNumberNormalizer
@@ -30,6 +31,7 @@ import kr.nanoha.buscard.caller.data.CachedBusinessCard
 import kr.nanoha.buscard.caller.data.ContactHistoryReader
 import kr.nanoha.buscard.caller.data.SyncResult
 import kr.nanoha.buscard.caller.overlay.BusinessCardNotification
+import kr.nanoha.buscard.caller.overlay.OverlaySettingsStore
 import kr.nanoha.buscard.caller.sync.BusinessCardSyncManager
 import kr.nanoha.buscard.caller.sync.SyncProgress
 
@@ -37,10 +39,12 @@ class MainActivity : Activity() {
     private lateinit var db: BusinessCardDatabase
     private lateinit var syncManager: BusinessCardSyncManager
     private lateinit var tokenStore: MobileTokenStore
+    private lateinit var settingsStore: OverlaySettingsStore
     private lateinit var statusText: TextView
     private lateinit var cardCountText: TextView
     private lateinit var loginBadgeText: TextView
     private lateinit var lastSyncText: TextView
+    private lateinit var missingCardAlertStateText: TextView
     private lateinit var callScreeningStateText: TextView
     private lateinit var contactsPermissionStateText: TextView
     private lateinit var phoneStatePermissionStateText: TextView
@@ -64,6 +68,7 @@ class MainActivity : Activity() {
         db = BusinessCardDatabase(this)
         syncManager = BusinessCardSyncManager(this)
         tokenStore = MobileTokenStore(this)
+        settingsStore = OverlaySettingsStore(this)
         renderUi(force = true)
         requestRequiredRuntimePermissions()
     }
@@ -203,6 +208,17 @@ class MainActivity : Activity() {
         displayCard.addView(sectionTitle("표시 방식"), blockParams(bottom = 10))
         displayCard.addView(infoRow("현재 방식", valueText("알림")))
         displayCard.addView(supportText("전화 수신 시 알림 영역에 명함 이미지와 최근 기록을 표시합니다."))
+        missingCardAlertStateText = valueText("")
+        displayCard.addView(infoRow("미등록 번호", missingCardAlertStateText), blockParams(top = 8))
+        displayCard.addView(toggleRow(
+            title = "저장되지 않은 번호 알림",
+            description = "꺼두면 저장된 명함 목록에 없는 수신 번호는 알림을 표시하지 않습니다.",
+            checked = settingsStore.load().showMissingCardAlerts,
+        ) { enabled ->
+            settingsStore.saveShowMissingCardAlerts(enabled)
+            updateSummary()
+            showStatus(if (enabled) "저장되지 않은 번호 알림이 활성화되었습니다." else "저장되지 않은 번호 알림이 비활성화되었습니다.")
+        }, blockParams(top = 10))
         root.addView(displayCard)
 
         val permissionCard = card()
@@ -428,6 +444,7 @@ class MainActivity : Activity() {
         }
         if (::cardCountText.isInitialized) cardCountText.text = "${db.activeCardCount()}건"
         if (::lastSyncText.isInitialized) lastSyncText.text = tokenStore.lastSyncAt().ifBlank { "없음" }
+        if (::missingCardAlertStateText.isInitialized) missingCardAlertStateText.text = if (settingsStore.load().showMissingCardAlerts) "활성화" else "비활성화"
         if (::callScreeningStateText.isInitialized) callScreeningStateText.text = callScreeningStatusLabel()
         if (::contactsPermissionStateText.isInitialized) contactsPermissionStateText.text = if (hasContactPermission()) "허용됨" else "미허용"
         if (::phoneStatePermissionStateText.isInitialized) phoneStatePermissionStateText.text = if (hasPhoneStatePermission()) "허용됨" else "미허용"
@@ -698,6 +715,48 @@ class MainActivity : Activity() {
                 includeFontPadding = false
             }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
             addView(value)
+        }
+    }
+
+    private fun toggleRow(title: String, description: String, checked: Boolean, onChanged: (Boolean) -> Unit): LinearLayout {
+        val textBlock = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(TextView(this@MainActivity).apply {
+                text = title
+                textSize = 14f
+                setTextColor(Palette.Ink)
+                typeface = Typeface.DEFAULT_BOLD
+                includeFontPadding = false
+            })
+            addView(TextView(this@MainActivity).apply {
+                text = description
+                textSize = 12f
+                setTextColor(Palette.Muted)
+                setLineSpacing(dp(2).toFloat(), 1.0f)
+                setPadding(0, dp(5), dp(12), 0)
+                includeFontPadding = false
+            })
+        }
+        val switchView = Switch(this).apply {
+            isChecked = checked
+            showText = false
+            setOnCheckedChangeListener { _, isChecked ->
+                if (isBusy) return@setOnCheckedChangeListener
+                onChanged(isChecked)
+            }
+        }
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(12), dp(12), dp(12), dp(12))
+            background = rounded(Palette.Input, 8, Palette.Line, 1)
+            isClickable = true
+            isFocusable = true
+            setOnClickListener {
+                if (!isBusy) switchView.isChecked = !switchView.isChecked
+            }
+            addView(textBlock, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+            addView(switchView)
         }
     }
 

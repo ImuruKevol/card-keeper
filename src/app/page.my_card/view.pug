@@ -127,7 +127,7 @@ main(class="my-card-workbench")
             button(*ngIf="card.public_enabled", type="button", (click)="unpublishCard()", [disabled]="publishing", class="text-danger-button") 링크 비활성화
 
     section(*ngIf="!loading", class="apk-download-panel")
-        a(href="/download/android-app.apk", download="business-card-caller.apk", class="apk-download-button")
+        a(href="/download/android-app.apk?v=0.1.1", download="business-card-caller-0.1.1.apk", class="apk-download-button")
             svg(xmlns="http://www.w3.org/2000/svg", fill="none", viewBox="0 0 24 24", stroke-width="1.5", stroke="currentColor")
                 path(stroke-linecap="round", stroke-linejoin="round", d="M12 16.5V3.75m0 12.75-3.75-3.75M12 16.5l3.75-3.75M3.75 16.5v2.25A2.25 2.25 0 0 0 6 21h12a2.25 2.25 0 0 0 2.25-2.25V16.5")
             span Android 앱 다운로드

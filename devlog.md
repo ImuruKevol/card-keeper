@@ -111,3 +111,4 @@
 | 2026-06-15 | 001 | cropper 조작 중 깜빡임 안정화 | [상세](devlog/2026-06-15/001-cropper-flicker-stability.md) |
 | 2026-06-15 | 002 | cropper 마스크 합성 안정화 | [상세](devlog/2026-06-15/002-cropper-mask-compositing.md) |
 | 2026-06-22 | 001 | 내 명함 저장 시 캔버스 참조 오류 수정 | [상세](devlog/2026-06-22/001-my-card-save-canvas-fallback.md) |
+| 2026-06-30 | 001 | Android 미등록 번호 알림 토글 및 APK 다운로드 링크 갱신 | [상세](devlog/2026-06-30/001-android-missing-card-alert-toggle-apk-link.md) |

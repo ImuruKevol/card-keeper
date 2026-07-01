@@ -11,6 +11,7 @@ data class OverlaySettings(
     val scale: Float,
     val opacity: Float,
     val displayMode: CardDisplayMode,
+    val showMissingCardAlerts: Boolean,
 )
 
 enum class CardDisplayMode(val storageValue: String) {
@@ -36,6 +37,7 @@ class OverlaySettingsStore(context: Context) {
             scale = prefs.getFloat(KEY_SCALE, 1.0f).coerceIn(0.8f, 1.2f),
             opacity = prefs.getFloat(KEY_OPACITY, 0.98f).coerceIn(0.85f, 1.0f),
             displayMode = CardDisplayMode.from(prefs.getString(KEY_DISPLAY_MODE, null)),
+            showMissingCardAlerts = prefs.getBoolean(KEY_SHOW_MISSING_CARD_ALERTS, true),
         )
     }
 
@@ -59,6 +61,10 @@ class OverlaySettingsStore(context: Context) {
         prefs.edit().putString(KEY_DISPLAY_MODE, mode.storageValue).apply()
     }
 
+    fun saveShowMissingCardAlerts(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_SHOW_MISSING_CARD_ALERTS, enabled).apply()
+    }
+
     fun presetTopEnd() {
         savePosition(Gravity.TOP or Gravity.END, dp(24), dp(140))
     }
@@ -80,5 +86,6 @@ class OverlaySettingsStore(context: Context) {
         private const val KEY_SCALE = "scale"
         private const val KEY_OPACITY = "opacity"
         private const val KEY_DISPLAY_MODE = "display_mode"
+        private const val KEY_SHOW_MISSING_CARD_ALERTS = "show_missing_card_alerts"
     }
 }

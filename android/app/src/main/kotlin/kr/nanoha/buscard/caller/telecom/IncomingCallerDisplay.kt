@@ -7,6 +7,7 @@ import kr.nanoha.buscard.caller.data.CachedBusinessCard
 import kr.nanoha.buscard.caller.data.CallerNameResolver
 import kr.nanoha.buscard.caller.data.ContactHistoryReader
 import kr.nanoha.buscard.caller.overlay.BusinessCardNotification
+import kr.nanoha.buscard.caller.overlay.OverlaySettingsStore
 
 object IncomingCallerDisplay {
     private var lastKey = ""
@@ -20,7 +21,12 @@ object IncomingCallerDisplay {
         val key = aliases.sorted().joinToString("|")
         if (isDuplicate(key)) return true
 
-        val card = BusinessCardDatabase(appContext).findByPhoneAliases(aliases) ?: missingCard(appContext, rawNumber, aliases)
+        val savedCard = BusinessCardDatabase(appContext).findByPhoneAliases(aliases)
+        if (savedCard == null && !OverlaySettingsStore(appContext).load().showMissingCardAlerts) {
+            return false
+        }
+
+        val card = savedCard ?: missingCard(appContext, rawNumber, aliases)
         val history = ContactHistoryReader.summary(appContext, aliases)
         BusinessCardNotification.show(appContext, card, history)
         return true
