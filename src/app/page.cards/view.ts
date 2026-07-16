@@ -900,11 +900,11 @@ export class Component implements OnInit, OnDestroy {
         const fitScale = Math.min(stageRect.width / naturalWidth, stageRect.height / naturalHeight);
         const baseWidth = Math.max(1, naturalWidth * fitScale);
         const baseHeight = Math.max(1, naturalHeight * fitScale);
-        const minScale = Math.max(frameRect.width / baseWidth, frameRect.height / baseHeight, 1);
+        const minScale = Math.max(frameRect.width / baseWidth, frameRect.height / baseHeight);
 
         this.cropper.baseWidth = baseWidth;
         this.cropper.baseHeight = baseHeight;
-        this.cropper.minScale = Number(minScale.toFixed(2));
+        this.cropper.minScale = Math.max(0.01, Math.ceil(minScale * 100) / 100);
         this.cropper.maxScale = Number(Math.max(minScale * 4, minScale + 2, 4).toFixed(2));
         this.cropper.scale = this.cropper.minScale;
         this.cropper.offsetX = 0;
@@ -1073,29 +1073,50 @@ export class Component implements OnInit, OnDestroy {
         await this.service.render();
     }
 
+    public async applyFullImage() {
+        try {
+            const image = this.cropper.image;
+            if (!image) throw new Error('전체 이미지를 확인할 수 없습니다.');
+            const dataUrl = this.imageAreaDataUrl(
+                image,
+                0,
+                0,
+                this.cropper.naturalWidth,
+                this.cropper.naturalHeight
+            );
+            await this.commitCropperImage(dataUrl);
+        } catch (error) {
+            await this.service.modal.error(this.errorMessage(error) || '전체 이미지를 적용하지 못했습니다.');
+        }
+    }
+
     public async applyCropper() {
         try {
             const dataUrl = this.cropSelectedImage();
-            const side = this.cropper.side;
-            const slot = this.captureSlot(side);
-            slot.fileName = this.cropper.fileName;
-            slot.preview = dataUrl;
-            slot.status = 'ready';
-            this.form.source = 'photo';
-            this.releaseCropperListeners();
-            this.cancelCropperFrame();
-            this.releaseCropperUrl();
-            this.cropper = this.emptyCropper();
-
-            if (side === 'front' && !this.captureSlot('back').preview) {
-                this.activeCaptureSide = 'back';
-            }
-            const count = this.capturedImageCount();
-            this.analysis = { status: 'ready', message: `${count}면 분석 대기`, confidence: 0, progress: 0, text: '', engine: '' };
-            await this.service.render();
+            await this.commitCropperImage(dataUrl);
         } catch (error) {
             await this.service.modal.error(this.errorMessage(error) || '명함 영역을 잘라내지 못했습니다.');
         }
+    }
+
+    private async commitCropperImage(dataUrl: string) {
+        const side = this.cropper.side;
+        const slot = this.captureSlot(side);
+        slot.fileName = this.cropper.fileName;
+        slot.preview = dataUrl;
+        slot.status = 'ready';
+        this.form.source = 'photo';
+        this.releaseCropperListeners();
+        this.cancelCropperFrame();
+        this.releaseCropperUrl();
+        this.cropper = this.emptyCropper();
+
+        if (side === 'front' && !this.captureSlot('back').preview) {
+            this.activeCaptureSide = 'back';
+        }
+        const count = this.capturedImageCount();
+        this.analysis = { status: 'ready', message: `${count}면 분석 대기`, confidence: 0, progress: 0, text: '', engine: '' };
+        await this.service.render();
     }
 
     private cropSelectedImage() {
@@ -1121,14 +1142,19 @@ export class Component implements OnInit, OnDestroy {
         const safeY = this.clamp(sourceY, 0, this.cropper.naturalHeight - 1);
         const safeWidth = Math.min(sourceWidth, this.cropper.naturalWidth - safeX);
         const safeHeight = Math.min(sourceHeight, this.cropper.naturalHeight - safeY);
+        return this.imageAreaDataUrl(image, safeX, safeY, safeWidth, safeHeight);
+    }
+
+    private imageAreaDataUrl(image: any, sourceX: number, sourceY: number, sourceWidth: number, sourceHeight: number) {
+        if (sourceWidth <= 0 || sourceHeight <= 0) throw new Error('적용할 이미지 영역을 확인할 수 없습니다.');
         const maxOutputSide = 2200;
-        const outputScale = Math.min(1, maxOutputSide / Math.max(safeWidth, safeHeight));
+        const outputScale = Math.min(1, maxOutputSide / Math.max(sourceWidth, sourceHeight));
         const canvas = document.createElement('canvas');
-        canvas.width = Math.max(1, Math.round(safeWidth * outputScale));
-        canvas.height = Math.max(1, Math.round(safeHeight * outputScale));
+        canvas.width = Math.max(1, Math.round(sourceWidth * outputScale));
+        canvas.height = Math.max(1, Math.round(sourceHeight * outputScale));
         const context = canvas.getContext('2d');
         if (!context) throw new Error('이미지 변환 컨텍스트를 만들 수 없습니다.');
-        context.drawImage(image, safeX, safeY, safeWidth, safeHeight, 0, 0, canvas.width, canvas.height);
+        context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
         return this.highQualityDataUrl(canvas);
     }
 

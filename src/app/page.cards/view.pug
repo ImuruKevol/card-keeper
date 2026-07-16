@@ -414,6 +414,7 @@ div(*ngIf="cropper.visible", class="cropper-scrim")
                 h2 {{cropper.label}} 명함 영역 맞춤
                 p {{cropper.fileName}}
             div(class="cropper-top-actions")
+                button(type="button", (click)="applyFullImage()", class="cropper-secondary cropper-full-image", title="명함이 사진을 가득 채운 경우 자르지 않고 전체 이미지를 사용합니다.", aria-label="이미지 전체를 자르지 않고 사용") 전체 사용
                 button(type="button", (click)="resetCropper()", class="cropper-secondary") 초기화
                 button(type="button", (click)="cancelCropper()", class="cropper-secondary") 취소
                 button(type="button", (click)="applyCropper()", class="cropper-primary") 적용
